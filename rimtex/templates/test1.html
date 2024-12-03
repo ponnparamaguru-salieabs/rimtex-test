@@ -1,0 +1,131 @@
+<script>
+    document.querySelectorAll('input[name="machine_ids"]').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            // No longer handling removal on checkbox change
+        });
+    });
+    
+    // Add event listeners to the "Remove" cells
+    document.querySelectorAll('.remove-machine').forEach(removeCell => {
+        removeCell.addEventListener('click', function() {
+            const lineId = this.closest('tr').querySelector('input[name="machine_ids"]').getAttribute('data-line-id');
+            const machineId = this.closest('tr').querySelector('input[name="machine_ids"]').value;
+            const machineName = this.closest('tr').querySelector('.font-medium').textContent;
+    
+            // Prepare data for AJAX request
+            const data = {
+                machine_id: machineId,
+                line_id: null // Line ID will be set to null for removal
+            };
+    
+            Swal.fire({
+                title: 'Are you sure?',
+                text: `Do you want to remove machine ${machineName} from line ID ${lineId}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, remove it!',
+                cancelButtonText: 'No, keep it'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Perform the AJAX request to update the machine status
+                    updateMachineStatus(data, this.closest('tr').querySelector('input[name="machine_ids"]'));
+                }
+            });
+        });
+    });
+    
+    function updateMachineStatus(data, checkbox) {
+        fetch('{% url "unassign_machine_line" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: JSON.stringify(data),
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Update the checkbox's data-line-id attribute
+                checkbox.setAttribute('data-line-id', data.line_id || 'None');
+    
+                // Update availability text
+                const statusCell = checkbox.closest('tr').querySelector('.flex.items-center');
+                statusCell.className = 'flex items-center sm:justify-center text-red-500';
+                statusCell.textContent = 'NO';
+    
+                Swal.fire(
+                    'Updated!',
+                    `Machine removed from line successfully!`,
+                    'success'
+                );
+            } else {
+                Swal.fire('Error', data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+            Swal.fire('Error', 'There was an issue with the request.', 'error');
+        });
+    }
+    </script>
+    
+    {% for machine_type in machine_types %}
+    <div class="flex justify-center items-center w-full">
+        <div class="step-content w-full px-2">
+            <div class="step-box intro-y p-5 hidden" data-step="{{ forloop.counter }}">
+                <div class="intro-y datatable-wrapper box shadow-none">
+                    <table class="table table-report table-report--bordered display datatable">
+                        <thead>
+                            <tr>
+                                <th class="border-b-2 whitespace-no-wrap">
+                                    <input class="input flex-none border border-gray-500" title="Select All" type="checkbox" id="selectAll-{{ forloop.counter }}" onchange="toggleAllCheckboxes({{ forloop.counter }}, this.checked)">
+                                </th>
+                                <th class="border-b-2 whitespace-no-wrap">NAME</th>
+                                <th class="border-b-2 text-center whitespace-no-wrap">MODEL</th>
+                                <th class="border-b-2 text-center whitespace-no-wrap">LOADING TIME</th>
+                                <th class="border-b-2 text-center whitespace-no-wrap">UNLOADING TIME</th>
+                                <th class="border-b-2 text-center whitespace-no-wrap">ASSIGNED</th>
+                                <th class="border-b-2 text-center whitespace-no-wrap">REMOVE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for machine in filtered_machines|dictsort:"type" %}
+                                {% if machine.type == machine_type.type %}
+                                <tr>
+                                    <td class="border-b w-5">
+                                        <div>
+                                            <input class="input flex-none border border-gray-500" type="checkbox" name="machine_ids" value="{{ machine.id }}" data-line-id="{{ machine.line_id }}"
+                                            {% if machine.line_id == line_id %}checked{% endif %}>
+                                        </div>
+                                    </td>
+                                    <td class="border-b">
+                                        <div class="font-medium whitespace-no-wrap">{{ machine.machine_name }}</div>
+                                    </td>
+                                    <td class="border-b text-center">
+                                        <div class="font-medium whitespace-no-wrap">{{ machine.model }}</div>
+                                    </td>
+                                    <td class="text-center border-b">{{ machine.loading_time }}</td>
+                                    <td class="text-center border-b">{{ machine.unloading_time }}</td>
+                                    <td class="w-40 border-b">
+                                        <div class="flex items-center sm:justify-center {{ machine.line_id|yesno:'text-green-500,text-red-500' }}">
+                                            {{ machine.line_id|yesno:"YES,NO" }}
+                                        </div>
+                                    </td>
+                                    <td class="text-center border-b cursor-pointer text-red-500 remove-machine">Remove</td>
+                                </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>                                    
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    

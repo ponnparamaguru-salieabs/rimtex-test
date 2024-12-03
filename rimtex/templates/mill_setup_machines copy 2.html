@@ -1,0 +1,103 @@
+{% extends 'topbar.html' %}
+{% load static %}
+{% block head %}
+    <title>Machine Configuration</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+    {% include 'user_navbar.html' %}
+    <div class="content p-4">
+        <div class="intro-y w-full pr-1 flex flex-col justify-center items-center">
+            <div class="w-8/12 p-1 border border-dashed border-gray-400 rounded-md">
+                <div class="pos__tabs nav-tabs flex"> 
+                    {% if request.user.is_staff %}
+                    <a data-toggle="tab" data-target="#millInfo" href="{% url 'millInfo' %}" class="flex-1 py-1 px-1 rounded-md text-sm text-center">Mill Information</a> 
+                    {% endif %}
+                    <a data-toggle="tab" data-target="#setupMachine" href="{% url 'millSetupMachine' %}" class="flex-1 py-1 px-1 rounded-md text-sm text-center active">Setup Machines</a> 
+                    <a data-toggle="tab" data-target="#mill-setup" href="{% url 'millConfig' %}" class="flex-1 py-1 px-1 rounded-md text-sm text-center">Machine Summary</a> 
+                    <a data-toggle="tab" data-target="#machineSumm" href="{% url 'millShift' %}" class="flex-1 py-1 px-1 rounded-md text-sm text-center">Shift Settings</a> 
+                </div>
+            </div>
+            <div class="tab-content p-8 mt-2 w-full flex justify-center">
+                <div class="tab-content__pane w-full active flex justify-center" id="setupMachine">
+                    <div class="intro-y box border rounded-md w-5/12">
+                        <div class="px-5 pb-5" id="input">
+                            <table class="table table-report w-full">
+                                <thead>
+                                    <tr>
+                                        <th class="whitespace-no-wrap py-6">SI NO</th> 
+                                        <th class="whitespace-no-wrap py-6">PATTERN</th>
+                                        <th class="whitespace-no-wrap text-center py-6">SELECT</th> 
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for machine in machines %}
+                                    <tr class="intro-x" style="height:50px;">
+                                        <td class="font-medium whitespace-no-wrap border-l border-t border-b" style="height: 100%;">{{ forloop.counter }}</td>
+                                        <td class="border-t border-b" style="height: 100%;">
+                                            <a href="#" class="font-medium whitespace-no-wrap">{{ machine.name }}</a> 
+                                        </td>
+                                        <td class="table-report__action w-5 border-t border-b border-r" style="height: 100%;">
+                                            <div class="flex items-center">
+                                                <span class="toggle-icon" data-machine-id="{{ machine.id }}" data-is-add="{{ machine.is_add }}">
+                                                    {% if machine.is_add %}
+                                                        <i class="fa-regular fa-square-minus" style="cursor:pointer;"></i>
+                                                    {% else %}
+                                                        <i class="fa-regular fa-square-plus" style="cursor:pointer;"></i>
+                                                    {% endif %}
+                                                </span>
+                                                <span class="ml-2 status-text whitespace-no-wrap">{% if machine.is_add %}Added{% else %}Not Added{% endif %}</span>
+                                            </div>
+                                        </td>
+                                    </tr> 
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <div class="flex justify-end gap-3">
+                                <button type="button" class="button bg-gray-500 text-white mt-5">Cancel</button>
+                                <button type="button" class="button bg-theme-1 text-white mt-5">Save & Continue</button>
+                            </div> 
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>  
+    <script>
+        $(document).ready(function() {
+            $('.toggle-icon').click(function() {
+                const machineId = $(this).data('machine-id');
+                const isAdd = $(this).data('is-add'); // true if added, false if not
+                const action = isAdd ? 'remove' : 'add';
+
+                // Update the icon and status text
+                $(this).data('is-add', !isAdd);
+                $(this).html(isAdd ? '<i class="fa-regular fa-square-plus" style="cursor:pointer;"></i>' : '<i class="fa-regular fa-square-minus" style="cursor:pointer;"></i>');
+                $(this).next('.status-text').text(isAdd ? 'Not Added' : 'Added');
+
+                $.ajax({
+                    url: '{% url "toggle_machine" %}',
+                    type: 'POST',
+                    data: {
+                        'machine_id': machineId,
+                        'action': action,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (!response.success) {
+                            // Optionally, revert the icon state on failure
+                            $(this).data('is-add', isAdd);
+                            $(this).html(isAdd ? '<i class="fa-regular fa-square-minus" style="cursor:pointer;"></i>' : '<i class="fa-regular fa-square-plus" style="cursor:pointer;"></i>');
+                            $(this).next('.status-text').text(isAdd ? 'Added' : 'Not Added');
+                        }
+                    }.bind(this), // Bind this for the success function
+                    error: function(xhr, status, error) {
+                        console.error(error);
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}

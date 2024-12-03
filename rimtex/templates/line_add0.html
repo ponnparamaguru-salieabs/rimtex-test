@@ -1,0 +1,237 @@
+{% extends 'topbar.html' %}
+{% load static %}
+{% load form_filters %}
+{% block head %}
+    <title>Add Line</title>
+{% endblock %}
+{% block content %}
+    {% include 'user_navbar.html' %}
+    <div class="content p-4 ">
+        <div class="intro-y w-full pr-1 flex flex-col justify-center items-center">
+            <div class="box bg-gray-300 w-10/12">
+                <div class="pos__tabs nav-tabs flex"> 
+                    <a data-toggle="tab" data-target="#lineDetails" href="javascript:;" class="flex-1 py-3 rounded-md text-center">Line Details</a> 
+                    <a data-toggle="tab" data-target="#selectPattern" href="javascript:;" class="flex-1 py-3 rounded-md text-center">Select Pattern</a> 
+                    <a data-toggle="tab" data-target="#selectMachine" href="javascript:;" class="flex-1 py-3 rounded-md text-center">Select Machine's</a> 
+                    <a data-toggle="tab" data-target="#configLine" href="javascript:;" class="flex-1 py-3 rounded-md text-center">Configure Line</a> 
+                    <a data-toggle="tab" data-target="#setLine" href="javascript:;" class="flex-1 py-3 rounded-md text-center active">Setup Line</a> 
+                </div>
+            </div>
+            <div class="tab-content h-full p-8 mt-4 w-full flex justify-center">
+                <div class="tab-content__pane box" id="lineDetails">
+                    <div class="intro-y box">
+                        <div class="flex flex-col sm:flex-row items-center p-5 border-b border-gray-200">
+                            <h2 class="font-medium text-base mr-auto">
+                                Enter Line Details
+                            </h2>
+                        </div>
+                        <div class="p-5" id="input">
+                            <div class="preview">
+                                <div> 
+                                    <label>Line Name</label> 
+                                    <input type="text" class="input w-full border my-3" placeholder="Line Name"> 
+                                </div>
+                                <div> 
+                                    <label>Line Description</label> 
+                                    <input type="text" class="input w-full border my-3" placeholder="Line Description"> 
+                                </div>
+                                <div> 
+                                    <label>Load Line Configuration From (Optional)</label> 
+                                    <input type="text" class="input w-full border my-3" placeholder=""> 
+                                </div>
+                                <div class="flex justify-end gap-3">
+                                    <button type="button" class="button bg-gray-500 text-white mt-5">Cancel</button>
+                                    <button type="button" class="button bg-theme-1 text-white mt-5">Save & Continue</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content__pane w-full" id="selectPattern">
+                    <h1 class="text-center mt-5">Select a Pattern</h1>
+                </div>
+                <div class="tab-content__pane w-full" id="selectMachine">
+                    <div class="intro-y box py-10 sm:py-20 mt-5">
+                        <div class="wizard flex flex-col lg:flex-row justify-center px-5 sm:px-20 relative">
+                            <!-- Step Indicators -->
+                            <div class="intro-x lg:text-center flex items-center lg:block flex-1 z-10">
+                                <button class="w-10 h-10 rounded-full button step-button text-white bg-theme-1" data-step="1" onclick="goToStep(1)">1</button>
+                                <div class="lg:w-32 font-medium text-base lg:mt-3 ml-3 lg:mx-auto step-text" data-step="1">Select Carding Machine</div>
+                            </div>
+                            <div class="intro-x lg:text-center flex items-center mt-5 lg:mt-0 lg:block flex-1 z-10">
+                                <button class="w-10 h-10 rounded-full button step-button bg-gray-200" data-step="2" onclick="goToStep(2)">2</button>
+                                <div class="lg:w-32 text-base lg:mt-3 ml-3 lg:mx-auto step-text" data-step="2">Select Breaker Machine</div>
+                            </div>
+                            <div class="intro-x lg:text-center flex items-center mt-5 lg:mt-0 lg:block flex-1 z-10">
+                                <button class="w-10 h-10 rounded-full button step-button text-gray-600 bg-gray-200" onclick="goToStep(3)" data-step="3">3</button>
+                                <div class="lg:w-32 text-base lg:mt-3 ml-3 lg:mx-auto step-text" data-step="3">Select Unilap Machine</div>
+                            </div>
+                            <div class="intro-x lg:text-center flex items-center mt-5 lg:mt-0 lg:block flex-1 z-10">
+                                <button class="w-10 h-10 rounded-full button step-button text-gray-600 bg-gray-200" onclick="goToStep(4)" data-step="4">4</button>
+                                <div class="lg:w-32 text-base lg:mt-3 ml-3 lg:mx-auto step-text" data-step="4">Select Comber Machine</div>
+                            </div>
+                            <div class="intro-x lg:text-center flex items-center mt-5 lg:mt-0 lg:block flex-1 z-10">
+                                <button class="w-10 h-10 rounded-full button step-button text-gray-600 bg-gray-200" onclick="goToStep(5)" data-step="5">5</button>
+                                <div class="lg:w-32 text-base lg:mt-3 ml-3 lg:mx-auto step-text" data-step="5">Select Finisher Machine</div>
+                            </div>
+                            <div class="intro-x lg:text-center flex items-center mt-5 lg:mt-0 lg:block flex-1 z-10">
+                                <button class="w-10 h-10 rounded-full button step-button text-gray-600 bg-gray-200" onclick="goToStep(6)" data-step="6">6</button>
+                                <div class="lg:w-32 text-base lg:mt-3 ml-3 lg:mx-auto step-text" data-step="6">Select Roving Machine</div>
+                            </div>
+                            <div class="wizard__line hidden lg:block w-2/3 bg-gray-200 absolute mt-5"></div>
+                        </div>
+                        <!-- Content for each step -->
+                        <div class="flex justify-center items-center w-full mt-3">
+                            <div id="stepContent" class="step-content w-full max-w-3xl md:max-w-4xl lg:max-w-5xl">
+                                <div class="step-box intro-y p-10" data-step="1">
+                                    <table class="table table-report -mt-2 w-full">
+                                        <thead>
+                                            <tr>
+                                                <th class="whitespace-no-wrap border-l border-t border-b rounded-md bg-slate-400">SI.NO</th>
+                                                <th class="whitespace-no-wrap border-t border-b">NAME</th>
+                                                <th class="text-center whitespace-no-wrap border-t border-b">MODEL</th>
+                                                <th class="text-center whitespace-no-wrap border-t border-b">AVAILABLE</th>
+                                                <th class="text-center whitespace-no-wrap border-t border-b border-r rounded-md">ACTIONS</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="intro-y">
+                                                <td class="w-40 border-l border-t border-b">1</td>
+                                                <td class="w-40 border-t border-b">Carding 2</td>
+                                                <td class="text-center border-t border-b">SN-PC</td>
+                                                <td class="w-40 border-t border-b">
+                                                    <div class="flex items-center justify-center text-theme-9"> YES </div>
+                                                </td>
+                                                <td class="table-report__action w-56 border-t border-b border-r">
+                                                    <div class="flex justify-center items-center">
+                                                        <a class="flex items-center mr-3" href="javascript:;"> SHOW </a>
+                                                        <a class="flex items-center text-theme-6" href="javascript:;" data-toggle="modal" data-target="#delete-confirmation-modal"> STOP </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <!-- More rows as needed -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="flex justify-center items-center w-full mt-3">
+                                    <div id="stepContent" class="step-content w-full max-w-3xl md:max-w-4xl lg:max-w-5xl">
+                                        <div class="step-box intro-y p-10" data-step="2">
+                                            <table class="table table-report -mt-2 w-full">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="whitespace-no-wrap border-l border-t border-b rounded-md bg-slate-400">SI.NO</th>
+                                                        <th class="whitespace-no-wrap border-t border-b">NAME</th>
+                                                        <th class="text-center whitespace-no-wrap border-t border-b">MODEL</th>
+                                                        <th class="text-center whitespace-no-wrap border-t border-b">AVAILABLE</th>
+                                                        <th class="text-center whitespace-no-wrap border-t border-b border-r rounded-md">ACTIONS</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr class="intro-y">
+                                                        <td class="w-40 border-l border-t border-b">1</td>
+                                                        <td class="w-40 border-t border-b">Breaker 2</td>
+                                                        <td class="text-center border-t border-b">SN-PC</td>
+                                                        <td class="w-40 border-t border-b">
+                                                            <div class="flex items-center justify-center text-theme-9"> YES </div>
+                                                        </td>
+                                                        <td class="table-report__action w-56 border-t border-b border-r">
+                                                            <div class="flex justify-center items-center">
+                                                                <a class="flex items-center mr-3" href="javascript:;"> SHOW </a>
+                                                                <a class="flex items-center text-theme-6" href="javascript:;" data-toggle="modal" data-target="#delete-confirmation-modal"> STOP </a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <!-- More rows as needed -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="flex justify-center items-center w-full mt-3">
+                                            <div id="stepContent" class="step-content w-full max-w-3xl md:max-w-4xl lg:max-w-5xl">
+                                                <div class="step-box intro-y p-10" data-step="3">
+                                                    <h1 class="text-center">No Unilap Machines Found</h1>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="flex justify-center items-center w-full mt-3">
+                                            <div id="stepContent" class="step-content w-full max-w-3xl md:max-w-4xl lg:max-w-5xl">
+                                                <div class="step-box intro-y p-10" data-step="4">
+                                                    <h1 class="text-center">No Comber Machines Found</h1>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="flex justify-center items-center w-full mt-3">
+                                            <div id="stepContent" class="step-content w-full max-w-3xl md:max-w-4xl lg:max-w-5xl">
+                                                <div class="step-box intro-y p-10" data-step="5">
+                                                    <h1 class="text-center">No Finisher Machines Found</h1>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="flex justify-center items-center w-full mt-3">
+                                            <div id="stepContent" class="step-content w-full max-w-3xl md:max-w-4xl lg:max-w-5xl">
+                                                <div class="step-box intro-y p-10" data-step="6">
+                                                    <h1 class="text-center">No Roving Machines Found</h1>
+                                                </div>
+                                            </div>
+                                        </div>
+                                <!-- Other step boxes with data-step attributes -->
+                            </div>
+                        </div>
+                        <!-- Navigation Buttons -->
+                        <div class="intro-y col-span-12 flex items-center justify-center sm:justify-end mr-20">
+                            <button id="prevStep" class="button w-24 justify-center block bg-gray-200 text-gray-600">Previous</button>
+                            <button id="nextStep" class="button w-24 justify-center block bg-theme-1 text-white ml-2">Next</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content__pane w-full" id="configLine">
+                    <h1 class="text-center mt-5">Select a Pattern</h1>
+                </div>
+                <div class="tab-content__pane box" id="setLine">
+                    <h1 class="text-center mt-5">Select a Pattern</h1>
+                </div>                
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let currentStep = 1;
+            const totalSteps = 6;
+            
+            function updateStep(step) {
+                document.querySelectorAll('.step-button').forEach(button => {
+                    button.classList.toggle('bg-theme-1', button.dataset.step == step);
+                    button.classList.toggle('bg-gray-200', button.dataset.step != step);
+                    button.classList.toggle('text-white', button.dataset.step == step);
+                    button.classList.toggle('text-gray-600', button.dataset.step != step);
+                });
+
+                document.querySelectorAll('.step-text').forEach(text => {
+                    text.classList.toggle('font-medium', text.dataset.step == step);
+                    text.classList.toggle('text-gray-600', text.dataset.step != step);
+                });
+
+                document.querySelectorAll('#stepContent .step-box').forEach(content => {
+                    content.style.display = content.dataset.step == step ? 'block' : 'none';
+                })
+                currentStep = step;
+            }
+            window.goToStep = function(step) {
+                if (step >= 1 && step <= totalSteps) {
+                    updateStep(step);
+                }
+            };
+
+            document.getElementById('nextStep').addEventListener('click', () => {
+                if (currentStep < totalSteps) {
+                    goToStep(currentStep + 1);
+                }
+            });
+            document.getElementById('prevStep').addEventListener('click', () => {
+                if (currentStep > 1) {
+                    goToStep(currentStep - 1);
+                }
+            });
+            updateStep(currentStep);
+        });
+    </script>
+{% endblock %}

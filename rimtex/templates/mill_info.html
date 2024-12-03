@@ -1,0 +1,109 @@
+{% extends 'topbar.html' %}
+{% load static %}
+{% block head %}
+    <title>Machine Configuration</title>
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.css"> -->
+{% endblock %}
+
+{% block content %}
+    {% include 'user_navbar.html' %}
+    <div class="content p-4">
+        <div class="intro-y w-full pr-1 flex flex-col justify-center items-center">
+            <div class="w-8/12 p-1 border border-dashed border-gray-400 rounded-md">
+                <div class="pos__tabs nav-tabs flex"> 
+                    {% if request.user.is_staff %}
+                    <a data-toggle="tab" data-target="#millInfo" href="{% url 'millInfo' %}" class="flex-1 py-1 px-1 rounded-md text-sm text-center {% if request.user.is_staff %} active {% endif %}">Mill Information</a> 
+                    {% endif %}
+                    <a data-toggle="tab" data-target="#setupMachine" href="{% url 'millSetupMachine' %}" class="flex-1 py-1 px-1 rounded-md text-sm text-center">Setup Machine</a> 
+                    <a data-toggle="tab" data-target="#machineSumm" href="{% url 'millConfig' %}" class="flex-1 py-1 px-1 rounded-md text-sm text-center">Machine Summary</a> 
+                    <a data-toggle="tab" data-target="#machineSumm" href="{% url 'millShift' %}" class="flex-1 py-1 px-1 rounded-md text-sm text-center">Shift Settings</a> 
+                </div>
+            </div>
+            <div class="tab-content p-8 mt-2 w-full flex justify-center">
+                {% if request.user.is_staff %}
+                <div class="tab-content__pane {% if request.user.is_staff %} active {% endif %} w-full flex justify-center" id="millInfo">
+                    <div class="intro-y box w-5/12">
+                        <div class="flex flex-col sm:flex-row items-center p-5 border-b border-gray-200">
+                            <h2 class="font-medium text-base mr-auto">Mill Details</h2>
+                        </div>
+                        <div class="p-5" id="input">
+                            <form method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div>
+                                    <label>Mill Name</label>
+                                    <input class="input w-full border my-3" type="text" name="name" value="{{ mill_info.name|default:'' }}" placeholder="Mill Name">
+                                </div>
+                                <div>
+                                    <label>Unit Number</label>
+                                    <input class="input w-full border my-3" type="text" name="unit_number" value="{{ mill_info.unit_number|default:'' }}" placeholder="Mill Unit Number">
+                                </div>
+                                <div>
+                                    <label>Phone</label>
+                                    <input class="input w-full border my-3" type="tel" name="phone" value="{{ mill_info.phone|default:'' }}" placeholder="Phone Number">
+                                </div>
+                                <div>
+                                    <label>Email</label>
+                                    <input class="input w-full border my-3" type="email" name="email" value="{{ mill_info.email|default:'' }}" placeholder="Email Address">
+                                </div>
+                                <div>
+                                    <label for="logo">Logo</label>
+                                    <div class="dropzone p-6 rounded-md my-3" id="myDropzone" style="border: 2px dashed #d1d5db; border-radius: 0.375rem;">
+                                        <div class="dz-message" data-dz-message>
+                                            {% if mill_info.logo %}
+                                            <div class="flex justify-center">
+                                                <img src="{{ mill_info.logo.url }}" alt="Mill Logo" class="w-32 h-32 my-3">
+                                            </div>
+                                            {% else %}
+                                            <div class="text-lg font-medium">Drop files here or click to upload.</div>
+                                            <div class="text-gray-600">This is just a demo dropzone. Selected files are <span class="font-medium">not</span> actually uploaded.</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="logo" id="logo">
+                                </div>
+                                <div class="flex justify-end">
+                                    <button type="submit" class="bg-theme-1 text-white py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out">Save & Continue</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>  
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.js"></script>
+    <script>
+        
+        Dropzone.autoDiscover = false;
+    
+        var myDropzoneElement = document.querySelector("#myDropzone");
+ 
+        if (!myDropzoneElement.dropzone) {
+            var myDropzone = new Dropzone(myDropzoneElement, {
+                url: "{% url 'file_upload' %}",
+                maxFiles: 1,
+                maxFilesize: 2,
+                acceptedFiles: "image/*",
+                addRemoveLinks: true,
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                dictDefaultMessage: "Drop files here or click to upload.",
+                dictRemoveFile: "Remove",
+                init: function() {
+                    this.on("success", function(file, response) {
+                        console.log("File uploaded successfully:", response);
+                        document.getElementById('logo').value = response.fileUrl;
+                    });
+                    this.on("error", function(file, response) {
+                        console.error("Error uploading file:", response);
+                    });
+                }
+            });
+        }
+    </script>
+    
+
+{% endblock %}

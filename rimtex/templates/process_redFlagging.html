@@ -1,0 +1,242 @@
+{% extends 'topbar.html' %}
+{% load static %}
+{% load form_filters %}
+
+{% block head %}
+    <title>Red Flagging</title>
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.15/dist/sweetalert2.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    {% include 'user_navbar.html' %}
+    <div class="content p-6">
+        <div class="intro-y w-full pr-1 flex flex-col justify-center items-center">
+            <div class="w-6/12 p-1 border border-dashed border-gray-400 rounded-md">
+                <div class="pos__tabs nav-tabs flex"> 
+                    {% if request.user.is_staff or request.user.userprofile.permissions.red_flag_view %}
+                    <a data-toggle="tab" href="{% url 'redFlagging' %}" class="flex-1 py-1 px-1 rounded-md text-sm text-center active">Red Flagging</a> 
+                    {% endif %}
+                    
+                    {% if request.user.is_staff or request.user.userprofile.permissions.can_manage_view %}
+                    <a data-toggle="tab" href="{% url 'canManage' %}" class="flex-1 py-1 px-1 rounded-md text-sm text-center">Can Management</a> 
+                    {% endif %}
+                    
+                    {% if request.user.is_staff or request.user.userprofile.permissions.non_scan_view %}
+                    <a data-toggle="tab" href="{% url 'nonScan' %}" class="flex-1 py-1 px-1 rounded-md text-sm text-center">Non Scan Settings</a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="tab-content p-8 w-full flex items-center justify-center">
+                <div class="tab-content__pane active w-full flex flex-col justify-center items-center" id="redFlag">
+                    <div class="intro-y box mt-5 w-4/12">
+                        <div class="flex flex-col sm:flex-row items-center p-5 border-b border-gray-200">
+                            <h2 class="font-medium text-base mr-auto">Select Line</h2>
+                        </div>
+                        <div class="p-5" id="hiding-searchbox">
+                            <div class="preview">
+                                <select data-hide-search="true" class="select2 w-full" id="line-select">
+                                    {% for line in millLine %}
+                                        <option value="{{ line.id }}">{{ line.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="flex justify-end gap-4 m-3">
+                            <button type="button" id="view-machines-btn" class="button bg-theme-1 text-white py-2 px-4 rounded-lg shadow-md hover:bg-theme-1 transition duration-150 ease-in-out">View Machines</button>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-6 mt-5" id="machines-table" style="display: none;">
+                        <div class="flex justify-between">
+                            <div class="intro-y flex items-center mt-8">
+                                <h2 class="text-lg font-medium mr-auto text-theme-6">Machines</h2>
+                            </div>
+                        </div>
+                        <div class="intro-y overflow-auto lg:overflow-visible p-2">
+                            <table class="table table-report -mt-2" id="machines-table-content">
+                                <thead>
+                                    <tr>
+                                        <th class="whitespace-no-wrap">SI NO</th>
+                                        <th class="whitespace-no-wrap">NAME</th>
+                                        <th class="text-center whitespace-no-wrap">MODEL</th>
+                                        <th class="text-center whitespace-no-wrap">ACTIONS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for machine in machines %}
+                                    <tr class="intro-x">
+                                        <td class="text-center">{{ forloop.counter }}</td>
+                                        <td><a href="#" class="font-medium whitespace-no-wrap">{{ machine.machine_name }}</a></td>
+                                        <td class="text-center">{{ machine.model }}</td>
+                                        <td class="table-report__action w-56">
+                                            <div class="flex justify-center items-center">
+                                                <input class="machine-checkbox" type="checkbox" data-machine-id="{{ machine.id }}"
+                                                    {% if machine.id in red_flagged_machines %} checked {% endif %}>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>                            
+                        </div>
+                        <div class="flex justify-end gap-3">
+                            <a href="javascript:;" data-toggle="modal" data-target="#markAsRed" class="button inline-block bg-theme-1 text-white">Mark as Red Flag</a>
+                        </div>
+                        <div class="modal" id="markAsRed">
+                            <div class="modal__content">
+                                <form method="post" id="redFlagging">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" id="action" value="add">
+                                    <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200">
+                                        <h2 class="font-medium text-base mr-auto">Mark as Red Flag</h2>
+                                    </div>
+                                    <div class="p-5 grid grid-cols-1 gap-4">
+                                        <div class="col-span-12">
+                                            <label>From</label>
+                                            <input type="datetime-local" name="start_time" id="start_time" class="input border w-full" required>
+                                        </div>
+                                        <div class="col-span-12">
+                                            <label>To</label>
+                                            <input type="datetime-local" name="end_time" id="end_time" class="input border w-full" required>
+                                        </div>
+                                    </div>
+                                    <div class="px-5 py-3 text-center text-red-600 font-bold border-t border-gray-200">
+                                        This Action can't be Undone
+                                    </div>
+                                    <div class="px-5 py-3 text-right border-t border-gray-200">
+                                        <button type="button" class="button w-20 border text-gray-700 mr-1" data-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="button w-20 bg-theme-1 text-white">Confirm</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.15/dist/sweetalert2.all.min.js"></script>
+    <script>
+        const red_flagged_machines = {{ red_flagged_machines|safe }};
+        document.getElementById('view-machines-btn').addEventListener('click', function() {
+            const selectedLineId = document.getElementById('line-select').value;
+            fetch(`/list_machines/${selectedLineId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    const machinesTableBody = document.querySelector('#machines-table-content tbody');
+                    machinesTableBody.innerHTML = ''; 
+
+                    if (data.machines.length === 0) {
+                        machinesTableBody.innerHTML = '<tr><td colspan="4" class="text-center">No machines found.</td></tr>';
+                    } else {
+                        data.machines.forEach((machine, index) => {
+                            const row = `
+                                <tr class="intro-x">
+                                    <td class="text-center">${index + 1}</td>
+                                    <td><a href="#" class="font-medium whitespace-no-wrap">${machine.machine_name}</a></td>
+                                    <td class="text-center">${machine.model}</td>
+                                    <td class="table-report__action w-56">
+                                        <div class="flex justify-center items-center">
+                                            <input class="machine-checkbox input border border-gray-500" type="checkbox" data-machine-id="${machine.id}"
+                                                ${red_flagged_machines.includes(machine.id) ? 'checked' : ''}>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `;
+                            machinesTableBody.innerHTML += row;
+                        });
+                    }
+                    document.getElementById('machines-table').style.display = 'flex'; 
+                })
+                .catch(error => console.error('Error fetching machines:', error));
+        });
+
+        document.getElementById('redFlagging').addEventListener('submit', function(event) {
+    event.preventDefault();
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'You are about to mark the selected machines as red-flagged. This action cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, mark as red-flagged',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const selectedMachines = [];
+            document.querySelectorAll('.machine-checkbox:checked').forEach(function(checkbox) {
+                const machineId = checkbox.getAttribute('data-machine-id');
+                if (machineId) {
+                    selectedMachines.push(machineId);
+                }
+            });
+
+            if (selectedMachines.length === 0) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Please select at least one machine.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            const startTime = document.getElementById('start_time').value;
+            const endTime = document.getElementById('end_time').value;
+
+            if (!startTime || !endTime) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Please specify start and end times.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            fetch('/red-flagging/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name="csrfmiddlewaretoken"]').value
+                },
+                body: JSON.stringify({
+                    machine_ids: selectedMachines,
+                    start_time: startTime,
+                    end_time: endTime
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Machines marked as red-flagged successfully.',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: data.error || 'An error occurred.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'An error occurred.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            });
+        }
+    });
+});
+
+    </script>
+{% endblock %}

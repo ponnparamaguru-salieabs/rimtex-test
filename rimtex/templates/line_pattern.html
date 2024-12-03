@@ -1,0 +1,73 @@
+{% extends 'topbar.html' %}
+{% load static %}
+{% block head %}
+    <title>Select Machine Types</title>
+{% endblock %}
+{% block content %}
+    {% include 'user_navbar.html' %}
+    <div class="content p-4">
+        <div class="intro-y w-full pr-1 flex flex-col justify-center items-center">
+            <div class="w-8/12 p-1 border border-dashed border-gray-400 rounded-md">
+                <div class="pos__tabs flex">
+                    <a href="{% url 'editMillLine' line_id %}" class="flex-1 py-1 px-1 rounded-md text-sm text-center">Line Details</a> 
+                    <a href="{% url 'millLineSelectPattern' line_id %}" class="flex-1 py-1 px-1 rounded-md text-sm text-center cursor-pointer bg-theme-6 text-white">Select Pattern</a>
+                    <a href="{% url 'millLineSelectMachine' line_id %}" class="flex-1 py-1 px-1 rounded-md text-sm text-center cursor-pointer">Select Machine</a>
+                    <a href="{% url 'millLineConfigLine' line_id %}" class="flex-1 py-1 px-1 rounded-md text-sm text-center cursor-pointer">Configure Line</a>
+                </div>
+            </div>
+        </div>
+        <div class="tab-content h-full p-8 mt-4 w-full flex justify-center">                     
+            <div class="tab-content__pane w-full flex justify-center active">
+                <div class="intro-y box border rounded-md w-full md:w-5/12">
+                    <div class="px-5 pb-5" id="input">
+                        <form method="post">
+                            {% csrf_token %}
+                            <table class="table table-report w-full">
+                                <thead>
+                                    <tr>
+                                        <th class="whitespace-no-wrap py-6">SI NO</th> 
+                                        <th class="whitespace-no-wrap py-6">PATTERN</th>
+                                        <th class="whitespace-no-wrap text-center py-6">SELECT</th> 
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for machine in machine_types %}
+                                        <tr class="intro-x" style="height:50px;">
+                                            <td class="font-medium whitespace-no-wrap border-l border-t border-b" style="height: 100%;">
+                                                {{ forloop.counter }}
+                                            </td>
+                                            <td class="border-t border-b" style="height: 100%;">
+                                                <a href="#" class="font-medium whitespace-no-wrap">{{ machine.type }}</a>
+                                            </td>
+                                            <td class="table-report__action w-1/4 border-t border-b border-r" style="height: 100%;">
+                                                <div class="flex items-center justify-center">
+                                                    <input type="checkbox" class="input border border-gray-500" name="machine_types" value="{{ machine.type }}"
+                                                        {% if machine in selected_machine_types %}checked{% endif %}>
+                                                </div>
+                                            </td>
+                                        </tr> 
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <div class="flex flex-col md:flex-row justify-end gap-3 mt-5">
+                                <button type="button" class="button bg-gray-200 text-gray-600 py-2 px-4 rounded-lg shadow-md hover:bg-gray-300 transition duration-150 ease-in-out" onclick="window.location.href='{% url 'millLine' %}'">Cancel</button>
+                                <button type="submit" class="button bg-theme-1 text-white">Save Selection</button>
+                            </div> 
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function goToSelectPattern(lineId) {
+            window.location.href = `/mill-line-select-pattern/${lineId}`;
+        }
+        function goToSelectMachine(lineId) {
+            window.location.href = `/mill-line-select-machine/${lineId}`;
+        }
+        function goToConfigLine(lineId) {
+            window.location.href = `/mill-line-config-line/${lineId}`;
+        }
+    </script>
+{% endblock %}

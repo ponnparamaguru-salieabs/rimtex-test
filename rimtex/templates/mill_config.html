@@ -1,0 +1,362 @@
+{% extends 'topbar.html' %}
+{% load static %}
+{% block head %}
+    <title>Machine Configuration</title>
+{% endblock %}
+
+{% block content %}
+    {% include 'user_navbar.html' %}
+    <!-- BEGIN: Content -->
+    <div class="content p-4">
+        <div class="intro-y w-full pr-1 flex flex-col justify-center items-center">
+            <div class="w-8/12 p-1 border border-dashed border-gray-400 rounded-md">
+                <div class="pos__tabs nav-tabs flex"> 
+                    {% if request.user.is_staff %}
+                    <a data-toggle="tab" href="{% url 'millInfo' %}" class="flex-1 py-1 px-1 rounded-md text-sm text-center">Mill Information</a> 
+                    {% endif %}
+                    {% if request.user.is_staff or request.user.userprofile.permissions.setup_machine_view %}
+                    <a data-toggle="tab" href="{% url 'millSetupMachine' %}" class="flex-1 py-1 px-1 rounded-md text-sm text-center">Setup Machines</a> 
+                    <a data-toggle="tab" href="{% url 'millConfig' %}" class="flex-1 py-1 px-1 rounded-md text-sm text-center active">Machine Summary</a> 
+                    {% endif %}
+                    {% if request.user.is_staff or request.user.userprofile.permissions.set_shift_view %}
+                    <a data-toggle="tab" href="{% url 'millShift' %}" class="flex-1 py-1 px-1 rounded-md text-sm text-center">Shift Settings</a> 
+                    {% endif %}
+                </div>
+            </div>
+            <div class="tab-content p-8 mt-2 w-full flex justify-center">
+                
+                <div class="tab-content__pane w-full active" id="machineSumm">
+                    <div class="actions flex justify-end mb-4 gap-4">
+                        <h2 class="text-lg font-medium mr-auto text-theme-6">List of Machines</h2>
+                        {% if request.user.is_staff or request.user.userprofile.permissions.setup_machine_edit %}
+                        <div class="text-center">
+                            <a href="javascript:;" data-toggle="modal" data-target="#addMachineModal" class="button inline-block bg-theme-1 text-white">Add Machine</a>
+                        </div>
+                        <!-- Add Machine Modal -->
+                        <div class="modal" id="addMachineModal">
+                            <div class="modal__content">
+                                <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200">
+                                    <h2 class="font-medium text-base mr-auto">Add Machine</h2>
+                                </div>
+                                <div class="p-5 grid grid-cols-1 gap-4">
+                                    <label for="machine-type" class="whitespace-nowrap">Select Machine Type</label> 
+                                    <div class="col-span-12 sm:col-span-6 flex items-center space-x-2"> 
+                                        <select id="machine-type" data-hide-search="true" class="w-full border mt-2 flex-1 select2">
+                                            <option value="">-- Select a Machine Type --</option>
+                                            {% for machine in machine_type %}
+                                            <option value="{{ machine.machine_type }}">{{ machine.machine_type }}</option>
+                                            {% endfor %}
+                                        </select> 
+                                    </div>                                      
+                                    <div class="col-span-12 sm:col-span-6 space-x-2"> 
+                                        <label for="machine-model">Select Machine Model</label> 
+                                        <select id="machine-model" data-hide-search="true" class="w-full border mt-2 flex-1 select2">
+                                            <option value="">-- Select a Machine --</option>
+                                        </select> 
+                                    </div>                                                                                                 
+                                    <div class="col-span-12 sm:col-span-6 space-x-2"> 
+                                        <label>Number of Machines</label> 
+                                        <input type="number" class="input w-full border mt-2 flex-1" placeholder="10"> 
+                                    </div>
+                                    <div class="col-span-12 sm:col-span-6 space-x-2"> 
+                                        <label>Number of Machines Starting (optional)</label> 
+                                        <input type="number" class="input w-full border mt-2 flex-1" placeholder="10"> 
+                                    </div>
+                                </div>
+                                <div class="px-5 py-3 text-right border-t border-gray-200"> 
+                                    <button type="button" class="button w-20 border text-gray-700 mr-1" data-dismiss="modal">Cancel</button> 
+                                    <button type="button" class="button w-20 bg-theme-1 text-white" id="addMachineButton">Add</button> 
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="intro-y datatable-wrapper box p-5">
+                        <table class="table table-report table-report--bordered display datatable w-full">
+                            <thead>
+                                <tr>
+                                    <th class="border-b-2 whitespace-no-wrap">SI NO</th>
+                                    <th class="border-b-2 text-center whitespace-no-wrap">TYPE</th>
+                                    <th class="border-b-2 text-center whitespace-no-wrap">MACHINE NAME</th>
+                                    <th class="border-b-2 text-center whitespace-no-wrap">IMAGES</th>
+                                    <th class="border-b-2 text-center whitespace-no-wrap">MODEL</th>
+                                    <th class="border-b-2 text-center whitespace-no-wrap">MANUFACTURER</th>
+                                    <!-- <th class="border-b-2 text-center whitespace-no-wrap">STATUS</th> -->
+                                    {% if request.user.is_staff or request.user.userprofile.permissions.setup_machine_edit %}
+                                    <th class="border-b-2 text-center whitespace-no-wrap">ACTION</th>
+                                    {% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for machine in mill_machines %}
+                                <tr>
+                                    <td class="border-b">
+                                        <div class="font-medium whitespace-no-wrap">{{ forloop.counter }}</div>
+                                    </td>
+                                    <td class="border-b">
+                                        <div class="font-medium whitespace-no-wrap text-center">{{ machine.type }}</div>
+                                    </td>
+                                    <td class="border-b">
+                                        <div class="font-medium whitespace-no-wrap text-center">{{ machine.machine_name }}</div>
+                                    </td>
+                                    <td class="text-center border-b">
+                                        <div class="flex sm:justify-center">
+                                            <div class="intro-x w-10 h-10 image-fit">
+                                                {% if machine.image %}
+                                                    <img alt="Machine Image" class="rounded-sm" src="{{ machine.image.url }}">
+                                                {% else %}
+                                                    <img alt="No Image" class="rounded-sm" src="{% static 'images/preview-16.jpg' %}">
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center border-b">{{ machine.model }}</td>
+                                    <td class="text-center border-b">{{ machine.manufacturer }}</td>
+                                    <!-- <td class="w-40 border-b">
+                                        <div class="flex items-center sm:justify-center">
+                                            <i data-feather="check-square" class="w-4 h-4 mr-2"></i>
+                                            Active
+                                        </div>
+                                    </td> -->
+                                    {% if request.user.is_staff or request.user.userprofile.permissions.setup_machine_edit %}
+                                    <td class="border-b w-5">
+                                        <div class="flex sm:justify-center items-center">
+                                            <button class="flex items-center mr-3" data-target="#editMachineModal" 
+                                                    data-machine-id="{{ machine.id }}" 
+                                                    data-machine-name="{{ machine.machine_name }}"
+                                                    onclick="openEditModal(this)">
+                                                <i data-feather="edit" class="w-4 h-4 mr-1"></i> Edit
+                                            </button>
+                                            <button class="flex items-center text-theme-6" onclick="confirmDelete(event, '{{ machine.id }}')">
+                                                <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete
+                                            </button>
+                                        </div>
+                                    </td>                                    
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div> 
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Machine Modal -->
+    <div class="modal" id="editMachineModal">
+        <div class="modal__content">
+            <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200">
+                <h2 class="font-medium text-base mr-auto">Edit Machine Name</h2>
+            </div>
+            <div class="p-5">
+                <label for="edit-machine-name" class="whitespace-nowrap">New Machine Name</label>
+                <input type="text" id="edit-machine-name" class="input w-full border mt-2 flex-1" placeholder="New Machine Name">
+            </div>
+            <div class="px-5 py-3 text-right border-t border-gray-200">
+                <button type="button" class="button w-20 border text-gray-700 mr-1" data-dismiss="modal">Cancel</button>
+                <button type="button" class="button w-20 bg-theme-1 text-white" id="saveEditButton">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+    // Change machine model based on selected type
+    $('#machine-type').change(function() {
+        var selectedType = $(this).val();
+        $('#machine-model').html('<option value="">-- Select a Machine --</option>'); 
+        
+        if (!selectedType) return;
+
+        $.ajax({
+            url: `/api/machine-models/?type=${selectedType}`,
+            type: 'GET',
+            success: function(data) {
+                data.forEach(function(machine) {
+                    $('#machine-model').append(new Option(machine.model, machine.code));
+                });
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching data:', error);
+            }
+        });
+    });
+
+    // Add machine button functionality
+    $('#addMachineButton').click(function() {
+        var machineType = $('#machine-type').val();
+        var machineModel = $('#machine-model').val();
+        var numMachines = $('input[placeholder="10"]').eq(0).val();
+        var numStarting = $('input[placeholder="10"]').eq(1).val();
+
+        // Check for duplicates
+        $.ajax({
+            url: `/api/check-machine-exists/?machine_type=${machineType}&num_machines=${numMachines}&starting_number=${numStarting}`,
+            type: 'GET',
+            success: function(response) {
+                if (response.duplicates.length > 0) {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'The following machine names already exist: ' + response.duplicates.join(', '),
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                // Proceed with adding machine
+                $.ajax({
+                    url: `/api/machine-models/?type=${machineType}`, 
+                    type: 'GET',
+                    success: function(machinesData) {
+                        var selectedMachine = machinesData.find(machine => machine.code === machineModel);
+                        
+                        if (selectedMachine) {
+                            var machineData = {
+                                'machine_type': machineType,
+                                'machine_model': selectedMachine.model,
+                                'machine_code': selectedMachine.code,
+                                'manufacturer': selectedMachine.manufacturer,
+                                'num_machines': numMachines,
+                                'num_starting': numStarting,
+                                'make_year': selectedMachine.make_year,
+                                'design': selectedMachine.design,
+                                'num_inputs': selectedMachine.num_inputs,
+                                'num_outputs': selectedMachine.num_outputs,
+                                'image': selectedMachine.image,
+                                'csrfmiddlewaretoken': '{{ csrf_token }}'
+                            };
+                            $.ajax({
+                                url: '/api/add-machine/', 
+                                type: 'POST',
+                                data: machineData,
+                                success: function(response) {
+                                    Swal.fire({
+                                        title: 'Success!',
+                                        text: response.message,
+                                        icon: 'success',
+                                        confirmButtonText: 'OK'
+                                    }).then(() => {
+                                        $('#addMachineModal').modal('hide');
+                                        location.reload();
+                                    });
+                                },
+                                error: function(xhr, status, error) {
+                                    console.error('Error adding machine:', error);
+                                    Swal.fire({
+                                        title: 'Error!',
+                                        text: 'There was an error adding the machine. Please try again.',
+                                        icon: 'error',
+                                        confirmButtonText: 'OK'
+                                    });
+                                }
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error fetching machine details:', error);
+                    }
+                });
+            }
+        });
+    });
+
+    // Save edited machine name
+    $('#saveEditButton').click(function() {
+        var machineId = $('#editMachineModal').data('machine-id');
+        var newName = $('#edit-machine-name').val();
+
+        // Check for name existence
+        $.ajax({
+            url: `/api/check-machine-name/?machine_name=${newName}&exclude_id=${machineId}`,
+            type: 'GET',
+            success: function(response) {
+                if (response.exists) {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'This machine name already exists. Please choose a different name.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                // Proceed with updating machine name
+                $.ajax({
+                    url: `/api/update-machine/${machineId}/`,
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ new_name: newName }),
+                    success: function(response) {
+                        Swal.fire({
+                            title: 'Success!',
+                            text: response.message,
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            $('#editMachineModal').modal('hide');
+                            location.reload();
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error updating machine:', error);
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Failed to update machine name. Please try again.',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                });
+            }
+        });
+    });
+
+    // Function to open the edit modal
+    window.openEditModal = function(button) {
+        var machineId = $(button).data('machine-id');
+        var machineName = $(button).data('machine-name');
+        
+        $('#edit-machine-name').val(machineName);
+        $('#editMachineModal').data('machine-id', machineId); // Store the ID in the modal
+        $('#editMachineModal').modal('show'); // Show the modal
+    };
+
+    // Function to confirm deletion
+    window.confirmDelete = function(event, machineId) {
+        event.preventDefault(); 
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: `/api/delete-machine/${machineId}/`,
+                    type: 'POST',
+                    data: {
+                        'csrfmiddlewaretoken': '{{ csrf_token }}',
+                    },
+                    success: function(response) {
+                        Swal.fire('Deleted!', response.message, 'success').then(() => {
+                            location.reload();
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error deleting machine:', error);
+                    }
+                });
+            }
+        });
+    };
+});
+    </script>  
+    <!-- END: Content -->
+{% endblock %}

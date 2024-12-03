@@ -1,0 +1,176 @@
+{% extends 'topbar.html' %}
+{% load static %}
+{% load form_filters %}
+{% load custom_filters %}
+
+{% block head %}
+    <title>Non Scan Settings</title>
+    <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/styles/ag-grid.css">
+    <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/styles/ag-theme-alpine.css">
+    <script src="https://unpkg.com/ag-grid-community/dist/ag-grid-community.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/handsontable@14.5/dist/handsontable.full.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@14.5/dist/handsontable.full.min.css" />
+    <script src="https://handsontable.com/docs/scripts/fixer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% endblock %}
+
+{% block content %}
+    {% include 'user_navbar.html' %}
+    <div class="content p-6">
+        <div class="intro-y w-full pr-1 flex flex-col justify-center items-center">
+            <div class="w-6/12 p-1 border border-dashed border-gray-400 rounded-md">
+                <div class="pos__tabs nav-tabs flex">
+                    {% if request.user.is_staff or request.user.userprofile.permissions.red_flag_view %}
+                    <a data-toggle="tab" href="{% url 'redFlagging' %}" class="flex-1 py-1 px-1 rounded-md text-sm text-center">Red Flagging</a> 
+                    {% endif %}
+                    
+                    {% if request.user.is_staff or request.user.userprofile.permissions.can_manage_view %}
+                    <a data-toggle="tab" href="{% url 'canManage' %}" class="flex-1 py-1 px-1 rounded-md text-sm text-center">Can Management</a> 
+                    {% endif %}
+                    
+                    {% if request.user.is_staff or request.user.userprofile.permissions.non_scan_view %}
+                    <a data-toggle="tab" href="{% url 'nonScan' %}" class="flex-1 py-1 px-1 rounded-md text-sm text-center active">Non Scan Settings</a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="tab-content p-8 w-full flex items-center justify-center">
+                <div class="tab-content__pane active w-full flex flex-col justify-center items-center" id="nonScan">
+                    <div id="example" class="w-full hot mx-auto hide-scrollbar"></div>
+                    <div class="flex gap-3 mt-6">
+                        <button type="button" class="button w-96 bg-theme-1 text-white save-settings">Save Settings</button>
+                        <button type="button" class="button w-96 bg-theme-1 text-white reset-settings">Reset OP Settings</button>
+                    </div>
+                    <style>
+                        
+                        #example {
+                            max-width: 900px;
+                            width: 100%;
+                        }
+                    </style>
+                    <script>
+                        const container = document.querySelector('#example');
+                        const machines = [
+                            {% for machine in machines %}
+                            { id: '{{ machine.id }}', name: '{{ machine.machine_name }}' },
+                            {% endfor %}
+                        ];
+
+                        const data = [
+                            {% for machine in machines %}
+                            [
+                                '{{ machine.machine_name|escapejs }}', 
+                                '{{ machine_settings|get_item:machine.id|get_item:"input_time"|default:"00:00"|escapejs }}', 
+                                '{{ machine_settings|get_item:machine.id|get_item:"input_tolerance"|default:"00:00"|escapejs }}', 
+                                '{{ machine_settings|get_item:machine.id|get_item:"output_time"|default:"00:00"|escapejs }}', 
+                                '{{ machine_settings|get_item:machine.id|get_item:"output_tolerance"|default:"00:00"|escapejs }}'
+                            ],
+                            {% endfor %}
+                        ];
+                        const colHeaders = ['Machines', 'Input Time (HH:MM)', 'Input Tolerance (HH:MM)', 'Output Time (HH:MM)', 'Output Tolerance (HH:MM)'];
+
+                        const hot = new Handsontable(container, {
+                            data,
+                            colHeaders,
+                            rowHeaders: true,
+                            rowHeights: 30,
+                            height: '320px',
+                            width: '100%',
+                            autoWrapRow: true,
+                            autoWrapCol: true,
+                            columnSorting: true,
+                            manualColumnResize: true,
+                            columnWidth: 100,
+                            licenseKey: 'non-commercial-and-evaluation',
+                            afterRender: function() {
+                                this.rootElement.classList.add('hide-scrollbar');
+                            },
+                            columns: [
+                                { data: 0, className: 'htMiddle', readOnly: true },
+                                { data: 1, className: 'htMiddle' },
+                                { data: 2, className: 'htMiddle' },
+                                { data: 3, className: 'htMiddle' },
+                                { data: 4, className: 'htMiddle' },
+                            ]
+                        });
+
+                        document.querySelector('.save-settings').addEventListener('click', function() {
+                        const settingsData = hot.getData().map((row, index) => {
+                            const machineId = machines[index].id;
+                            return `${machineId},${row[1]},${row[2]},${row[3]},${row[4]}`;
+                        });
+
+                        fetch("{% url 'save_machine_settings' %}", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{ csrf_token }}'
+                            },
+                            body: JSON.stringify({ settings: settingsData })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                Swal.fire(
+                                    'Saved!',
+                                    'Settings saved successfully!',
+                                    'success'
+                                );
+                            } else {
+                                Swal.fire(
+                                    'Error!',
+                                    'There was an error saving the settings.',
+                                    'error'
+                                );
+                            }
+                        })
+                        .catch(error => {
+                            Swal.fire(
+                                'Error!',
+                                'Something went wrong while saving settings.',
+                                'error'
+                            );
+                            console.error('Error:', error);
+                        });
+                    });
+                    document.querySelector('.reset-settings').addEventListener('click', function() {
+                        Swal.fire({
+                            title: 'Are you sure?',
+                            text: 'Do you want to reset all settings?',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'Yes, reset it!',
+                            cancelButtonText: 'No, cancel!',
+                            reverseButtons: true
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                const resetData = hot.getData().map(row => {
+                                    return [
+                                        row[0], 
+                                        '00:00', 
+                                        '00:00', 
+                                        '00:00', 
+                                        '00:00' 
+                                    ];
+                                });
+                                hot.loadData(resetData);
+                                Swal.fire(
+                                    'Reset!',
+                                    'The settings have been reset.',
+                                    'success'
+                                );
+                            } 
+                            else {
+                                Swal.fire(
+                                    'Cancelled',
+                                    'Your settings are safe.',
+                                    'error'
+                                );
+                            }
+                        });
+                    });                    
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

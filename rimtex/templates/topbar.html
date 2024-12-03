@@ -1,0 +1,86 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <link href="{% static 'images/logo.svg' %}" rel="shortcut icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Include SweetAlert CSS and JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+    <link rel="stylesheet" href="{% static 'css/app.css' %}" />
+    <!-- <link rel="stylesheet" href="{% static 'css/app_old.css' %}" /> -->
+    {% block head %}
+        <title>Rimtex</title>
+    {% endblock %}
+</head>
+<body class="app">
+    <!-- BEGIN: Top Bar -->
+    <div class="border-b border-red-600 -mt-10 md:-mt-5 -mx-3 sm:-mx-8 px-3 sm:px-8 pt-3 md:pt-0 mb-3">
+        <div class="top-bar-boxed flex items-center">
+            <!-- BEGIN: Logo -->
+            <a href="" class="-intro-x hidden md:flex">
+                {% if mill.info.logo %}
+                    <img alt="{{ mill.info.name|default:'Mill Logo' }}" class="w-6" src="{{ mill.info.logo.url }}">
+                {% else %}
+                    <img alt="Default Logo" class="w-6" src="{% static 'images/rimtex-logo.png' %}">
+                {% endif %}
+                {% if mill.info.name %}
+                    <span class="text-white text-lg ml-3 font-bold">
+                        {{ mill.info.name }}
+                    </span>
+                {% else %}
+                    <span class="text-white text-lg ml-3 font-bold">
+                        Wizcan
+                    </span>
+                {% endif %}
+            </a>
+            <!-- END: Logo -->
+            <!-- BEGIN: Breadcrumb -->
+            <div class="-intro-x breadcrumb breadcrumb--light border-l border-red-600 mr-auto ">
+                {% for item in breadcrumb %}
+                    <a href="{{ item.url }}" class="text-white">{{ item.name }}</a>
+                    {% if not forloop.last %}
+                        <i data-feather="chevron-right" class="breadcrumb__icon text-white"></i>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <!-- END: Breadcrumb -->
+            <!-- BEGIN: Account Menu -->
+            <div class="intro-x dropdown w-8 h-8 relative">
+                <div class="dropdown-toggle w-8 h-8 rounded-full overflow-hidden image-fit zoom-in scale-110 flex items-center justify-center">
+                    <i data-feather="user" class="text-white text-center"></i>
+                </div>
+                <div class="dropdown-box mt-10 absolute w-56 top-0 right-0 z-20">
+                    <div class="dropdown-box__content box bg-theme-6 text-white">
+                        <div class="p-4 border-b border-red-600">
+                            <div class="font-medium">{{ request.user.username }}</div>
+                            <div class="text-xs text-theme-2 py-1">{{ request.user.userprofile.role }}</div> 
+                        </div>
+                        <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                            <!-- <div class="p-2 border-t border-red-600">
+                                {% csrf_token %}
+                                <button type="submit" class="flex items-center p-2 transition duration-300 ease-in-out hover:bg-theme-6 rounded-md">
+                                    <i data-feather="toggle-right" class="w-4 h-4 mr-2"></i> Logout
+                                </button>
+                            </div> -->
+                            <div class="p-2 border-t border-red-600">
+                                {% csrf_token %}
+                                <button type="submit" class="flex w-full items-center p-2 transition duration-300 ease-in-out hover:bg-red-800 rounded-md"> <i data-feather="toggle-right" class="w-4 h-4 mr-2"></i> Logout </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>            
+            <!-- END: Account Menu -->
+        </div>
+    </div>
+    <!-- BEGIN: Content -->
+    {% block content %}
+    <!-- Content goes here -->
+    {% endblock %}
+    <!-- END: Content -->
+    <script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>

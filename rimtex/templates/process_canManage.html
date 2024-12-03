@@ -1,0 +1,90 @@
+{% extends 'topbar.html' %}
+{% load static %}
+{% load form_filters %}
+
+{% block head %}
+    <title>Can Management</title>
+{% endblock %}
+
+{% block content %}
+    {% include 'user_navbar.html' %}
+    <div class="content p-6">
+        <div class="intro-y w-full pr-1 flex flex-col justify-center items-center">
+            <div class="w-6/12 p-1 border border-dashed border-gray-400 rounded-md">
+                <div class="pos__tabs nav-tabs flex"> 
+                    {% if request.user.is_staff or request.user.userprofile.permissions.red_flag_view %}
+                    <a data-toggle="tab" href="{% url 'redFlagging' %}" class="flex-1 py-1 px-1 rounded-md text-sm text-center">Red Flagging</a> 
+                    {% endif %}
+                    
+                    {% if request.user.is_staff or request.user.userprofile.permissions.can_manage_view %}
+                    <a data-toggle="tab" href="{% url 'canManage' %}" class="flex-1 py-1 px-1 rounded-md text-sm text-center active">Can Management</a> 
+                    {% endif %}
+                    
+                    {% if request.user.is_staff or request.user.userprofile.permissions.non_scan_view %}
+                    <a data-toggle="tab" href="{% url 'nonScan' %}" class="flex-1 py-1 px-1 rounded-md text-sm text-center">Non Scan Settings</a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="tab-content p-8 w-full flex items-center justify-center">
+                <div class="tab-content__pane active w-full flex flex-col justify-center items-center">
+                    <div class="flex justify-between w-full">
+                        <h2 class="text-xl font-medium text-theme-6">
+                            {% if selected_line %}
+                                {{ selected_line.name }}
+                            {% endif %}
+                        </h2>
+                        <form method="get" id="line-select-form">
+                            <div> 
+                                <select name="line_id" data-hide-search="true" class="w-full select2">
+                                    {% for line in lines %}
+                                        <option value="{{ line.id }}" 
+                                            {% if line.id == selected_line.id %} selected {% endif %}
+                                        >{{ line.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <input type="submit" class="button bg-theme-1 text-white" value="Submit"/>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="intro-y datatable-wrapper box p-5 mt-5">
+                        <table class="table table-report table-report--bordered display datatable w-full">
+                            <thead>
+                                <tr>
+                                    <th class="whitespace-no-wrap">SI NO</th>
+                                    <th class="whitespace-no-wrap">CAN ID</th>
+                                    <th class="text-center whitespace-no-wrap">CURRENT OUTPUT MACHINE</th>
+                                    <th class="text-center whitespace-no-wrap">CURRENT INPUT MACHINE</th>
+                                </tr>
+                            </thead>
+                            {% if machines %}
+                            <tbody>
+                                {% for machine in machines %}
+                                    <tr>
+                                        <td class="text-left">{{ forloop.counter }}</td>
+                                        <td>
+                                            <a href="" class="font-medium whitespace-no-wrap">{{ machine.can_id }}</a> 
+                                        </td>
+                                        <td class="text-center">{{ machine.output_machine }}
+                                            {{ machine.output_position|slice:"4:-3" }} 
+                                            at position {{ machine.output_position|slice:"-3:" }}
+                                        </td>
+                                        <td class="text-center">
+                                            {% if machine.output_position and machine.input_machine %}
+                                                {{ machine.input_machine }}
+                                                {{ machine.input_position|slice:"3:-3" }}
+                                                at position {{ machine.input_position|slice:"-3:" }}
+                                            {% else %}    
+                                                <span class="text-red-600">Yet to Scan</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        {% endif %}
+                        </table>
+                    </div>
+                </div>                              
+            </div>
+        </div>
+    </div>
+{% endblock %}

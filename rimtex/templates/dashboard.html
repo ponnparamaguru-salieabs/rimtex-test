@@ -1,0 +1,605 @@
+{% extends 'topbar.html' %}
+{% load static %}
+{% load form_filters %}
+
+{% block head %}
+    <title>Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+{% endblock %}
+
+{% block content %}
+    {% include 'user_navbar.html' %}
+    <div class="content">
+        <div class="flex justify-between m-5">
+            <h2 class="text-xl font-medium text-theme-6">
+                {% if selected_line %}
+                    {{ selected_line.name }}
+                {% endif %}
+            </h2>
+            <form method="get" id="line-select-form">
+                <div> 
+                    <select name="line_id" data-hide-search="true" class="w-full select2">
+                        {% for line in lines %}
+                            <option value="{{ line.id }}" 
+                                {% if line.id == selected_line.id %} selected {% endif %}
+                            >{{ line.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="submit" class="button bg-theme-1 text-white" value="Submit"/>
+                </div>
+            </form>
+        </div>
+        <div class="intro-y grid grid-cols-12 gap-3">
+            <div class="col-span-12 lg:col-span-4 2xl:col-span-4">
+                <div class="intro-y box">
+                    <div class="p-5">
+                        <div class="preview">
+                            <div id="h-bar-chart" style="height: 350px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-span-12 lg:col-span-4">
+                <div class="intro-y box">
+                    <div class="p-5">
+                        <div class="preview">
+                            <div id="v-bar-chart" style="height: 350px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-span-12 lg:col-span-4 2xl:col-span-4">
+                <div class="intro-y box">
+                    <div class="p-5">
+                        <div class="preview">
+                            <div id="machineStoppage" style="height: 350px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-span-12 lg:col-span-3 2xl:col-span-4">
+                <div class="intro-y box">
+                    <div class="p-5">
+                        <div class="preview">
+                            <!-- <canvas class="mt-3" id="override-pie-chart"  ></canvas> -->
+                            <div id="override-pie-chart" style="height: 225px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-span-12 lg:col-span-5 2xl:col-span-4">
+                <div class="intro-y box overflow-auto">
+                    <div class="p-4">
+                        <p class="text-center font-bold mb-2">Ageing Breakup</p>
+                        <table class="table-auto w-full text-left p-5">
+                            <thead>
+                                <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
+                                    <th class="py-5 px-1">Range</th>
+                                    <th class="py-5 px-1">Carding</th>
+                                    <th class="py-5 px-1">Breaker</th>
+                                    <th class="py-5 px-1">Unilap</th>
+                                    <th class="py-5 px-1">Comber</th>
+                                    <th class="py-5 px-1">Finisher</th>
+                                    <th class="py-5 px-1">Rover</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-700 text-sm">
+                                <tr class="bg-red-300">
+                                    <td class="py-3 px-1 font-semibold">>24</td>
+                                    <td class="py-3 px-1" id="carding-24"></td>
+                                    <td class="py-3 px-1" id="breaker-24"></td>
+                                    <td class="py-3 px-1" id="unilap-24"></td>
+                                    <td class="py-3 px-1" id="comber-24"></td>
+                                    <td class="py-3 px-1" id="finisher-24"></td>
+                                    <td class="py-3 px-1" id="rover-24"></td>
+                                </tr>
+                                <tr class="bg-orange-300">
+                                    <td class="py-3 px-1 font-semibold">16 - 24</td>
+                                    <td class="py-3 px-1" id="carding-16-24"></td>
+                                    <td class="py-3 px-1" id="breaker-16-24"></td>
+                                    <td class="py-3 px-1" id="unilap-16-24"></td>
+                                    <td class="py-3 px-1" id="comber-16-24"></td>
+                                    <td class="py-3 px-1" id="finisher-16-24"></td>
+                                    <td class="py-3 px-1" id="rover-16-24"></td>
+                                </tr>
+                                <tr class="bg-yellow-300">
+                                    <td class="py-3 px-1 font-semibold">8 - 16</td>
+                                    <td class="py-3 px-1" id="carding-8-16"></td>
+                                    <td class="py-3 px-1" id="breaker-8-16"></td>
+                                    <td class="py-3 px-1" id="unilap-8-16"></td>
+                                    <td class="py-3 px-1" id="comber-8-16"></td>
+                                    <td class="py-3 px-1" id="finisher-8-16"></td>
+                                    <td class="py-3 px-1" id="rover-8-16"></td>
+                                </tr>
+                                <tr class="bg-green-300">
+                                    <td class="py-3 px-1 font-semibold">0 - 8</td>
+                                    <td class="py-3 px-1" id="carding-0-8"></td>
+                                    <td class="py-3 px-1" id="breaker-0-8"></td>
+                                    <td class="py-3 px-1" id="unilap-0-8"></td>
+                                    <td class="py-3 px-1" id="comber-0-8"></td>
+                                    <td class="py-3 px-1" id="finisher-0-8"></td>
+                                    <td class="py-3 px-1" id="rover-0-8"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-span-12 lg:col-span-4">
+                <div class="w-full mx-auto box">
+                    <div class="p-3">
+                        <p class="text-center font-bold mb-2">Non Scan</p>
+                        <table class="table-auto w-full text-left">
+                            <thead>
+                                <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
+                                    <th class="py-3 px-4">MACHINE NAME </th>
+                                    <th class="py-3 px-4">NON SCAN DURATION</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-700 text-sm">
+                                <tr class="border-b">
+                                    <td class="py-1 px-4 font-semibold">Carding</td>
+                                    <td class="py-1 px-4" id="carding-time"></td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="py-1 px-4 font-semibold">Breaker</td>
+                                    <td class="py-1 px-4" id="breaker-time"></td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="py-1 px-4 font-semibold">Comber</td>
+                                    <td class="py-1 px-4" id="comber-time"></td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="py-1 px-4 font-semibold">Finisher</td>
+                                    <td class="py-1 px-4" id="finisher-time"></td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="py-1 px-4 font-semibold">Unilap</td>
+                                    <td class="py-1 px-4" id="unilap-time"></td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="py-1 px-4 font-semibold">Roving</td>
+                                    <td class="py-1 px-4" id="roving-time"></td>
+                                </tr>
+                                <tr class="bg-gray-100">
+                                    <td class="py-1 px-4 font-semibold">[ Total ]</td>
+                                    <td class="py-1 px-4" id="total-time"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- <div class="col-span-12 lg:col-span-12">
+                <div class="w-full mx-auto mt-3">
+                    <div class="bg-white shadow-md rounded-lg p-6">
+                        <div class="flex justify-between">
+                            <h2 class="text-lg font-semibold mb-4">Inprocess Sliver Weight Details</h2>
+                            <h2 class="text-lg font-semibold mb-4">Time: 2024-06-12 12:34(LIVE)</h2>
+                        </div>
+                        <table class="table-auto w-full text-left">
+                            <thead>
+                                <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
+                                    <th class="py-3 px-4">MACHINE NAME </th>
+                                    <th class="py-3 px-4">AGING CANS</th>
+                                    <th class="py-3 px-4">AGING CANS SLIVER IN KGs</th>
+                                    <th class="py-3 px-4">IN PROCESS CANS</th>
+                                    <th class="py-3 px-4">IN PROCESS CAN SLIVER IN KGs</th>
+                                    <th class="py-3 px-4">TOTAL CANS</th>
+                                    <th class="py-3 px-4">TOTAL SLIVER IN KGs</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-700 text-sm">
+                                <tr class="border-b">
+                                    <td class="py-2 px-4 font-semibold">Carding</td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="py-2 px-4 font-semibold">Breaker</td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="py-2 px-4 font-semibold">Comber</td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="py-2 px-4 font-semibold">Finisher</td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="py-2 px-4 font-semibold">Unilap</td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="py-2 px-4 font-semibold">Roving</td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                </tr>
+                                <tr class="bg-gray-100">
+                                    <td class="py-2 px-4 font-semibold">[ Total ]</td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                    <td class="py-2 px-4"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>    -->
+        </div>   
+    </div>
+    <script type="text/javascript">
+        const chartData = JSON.parse('{{ chart_data_json|escapejs }}');
+        const stoppageChartData = JSON.parse('{{ stoppage_chart_data_json|escapejs }}');
+        const lineProgressData = JSON.parse('{{ lineProgress_json|escapejs }}');
+        const machineTimeDisplay = JSON.parse('{{ machine_time_display_json|escapejs }}');
+        const machineStoppageDuration = JSON.parse('{{ machine_stoppage_duration_json|escapejs }}');
+        const options = {
+            chart: {
+                type: 'pie',
+                height: 265
+            },
+            labels: chartData.labels, 
+            series: chartData.series, 
+            colors: ['#f78b00', '#1c3faa', '#fbc500', '#e31e24', '#d53f8c', '#91c714'],
+            legend: {
+                position: 'bottom',
+                fontSize: '10px'
+            },
+            tooltip: {
+                y: {
+                    formatter: function(value) {
+                        return value + " times"; 
+                    }
+                }
+            }
+        };
+        const chart = new ApexCharts(document.querySelector("#override-pie-chart"), options);
+        chart.render();
+
+        const vchartData = JSON.parse('{{ v_chart_data_json|escapejs }}');
+        const unloadingDetails = JSON.parse('{{ unloading_details_dict_json|escapejs }}');
+        var agingCan = {
+            series: [{
+                name: 'No. of Cans',
+                type: 'column',
+                data: vchartData.series
+            }, {
+                name: 'Kg of Sliver',
+                type: 'column',
+                data: [
+                unloadingDetails.Carding,
+                unloadingDetails.Breaker,
+                unloadingDetails.Unilap,
+                unloadingDetails.Comber,
+                unloadingDetails.Finisher,
+                unloadingDetails.Roving
+            ]
+            }],
+            chart: {
+                height: 350,
+                type: 'bar',
+                stacked: false
+            },
+            dataLabels: {
+                enabled: false
+            },
+            stroke: {
+                width: [1, 1]
+            },
+            title: {
+                text: 'Ageing Cans & Total Slivers',
+                align: 'center',
+                style: {
+                    fontWeight:  'bold',
+                    color:  '#263238'
+                },
+            },
+            xaxis: {
+                categories: vchartData.labels
+            },
+            yaxis: [{
+                seriesName: 'No. of Cans',
+                axisTicks: {
+                    show: true,
+                },
+                axisBorder: {
+                    show: true,
+                    color: '#008FFB'
+                },
+                labels: {
+                    style: {
+                        colors: '#008FFB',
+                    }
+                },
+                title: {
+                    text: "No. of Cans",
+                    style: {
+                        color: '#008FFB',
+                    }
+                },
+                tooltip: {
+                    enabled: true
+                }
+            },
+            {
+                seriesName: 'Kg. of Silver',
+                opposite: true,
+                axisTicks: {
+                    show: true,
+                },
+                axisBorder: {
+                    show: true,
+                    color: '#00E396'
+                },
+                labels: {
+                    style: {
+                        colors: '#00E396',
+                    }
+                },
+                title: {
+                    text: "Kg. of Silver",
+                    style: {
+                        color: '#00E396',
+                    }
+                },
+            }],
+            tooltip: {
+                fixed: {
+                    enabled: true,
+                    position: 'topLeft',
+                    offsetY: 30,
+                    offsetX: 60
+                },
+            },
+            legend: {
+                horizontalAlign: 'left',
+                offsetX: 40
+            }
+        };
+
+        var vbarchart = new ApexCharts(document.querySelector("#h-bar-chart"), agingCan);
+        vbarchart.render();
+        
+        var lineProgress = {
+          series: [{
+            name: ['Estimated Time'],
+            data: [lineProgressData.total_duration ]
+        }, {
+            name: ['Progress Time'],
+            data: [lineProgressData.elapsed_time ]
+        }],
+          chart: {
+          type: 'bar',
+          height: 350
+        },
+        title: {
+                text: 'Line Progress',
+                align: 'center',
+                style: {
+                    fontWeight:  'bold',
+                    color:  '#263238'
+                },
+            },
+            stroke: {
+            width: 1,
+            colors: ['#fff']
+            },
+            colors: [ '#43A047', '#E53935'],
+        plotOptions: {
+          bar: {
+            horizontal: true,
+            dataLabels: {
+              position: 'top',
+            },
+            barHeight: '40%'
+          }
+        },
+        dataLabels: {
+          enabled: true,
+          offsetX: -6,
+          style: {
+            fontSize: '12px',
+            colors: ['#fff']
+          }
+        },
+        stroke: {
+          show: true,
+          width: 1,
+          colors: ['#fff']
+        },
+         tooltip: {
+                fixed: {
+                    enabled: true,
+                    position: 'topLeft',
+                    offsetY: 30,
+                    offsetX: 60
+                },
+                y: {
+                    formatter: function (val) {
+                        var hours = Math.floor(val);
+                        var minutes = Math.round((val - hours) * 60); 
+                        return hours + "hrs " + minutes + "min";
+                    }
+                }
+            },  
+        xaxis: {
+          categories: ['{{selected_line | safe}}'],
+        },
+        }
+
+        var vBarChart = new ApexCharts(document.querySelector("#v-bar-chart"), lineProgress);
+        vBarChart.render();
+        var machineStoppage = {
+            series: [{
+                name: 'No. of Times',
+                type: 'column',
+                data: stoppageChartData.series
+            }, {
+                name: 'Duration',
+                type: 'column',
+                data: Object.values(machineStoppageDuration)
+            }],
+            chart: {
+                height: 350,
+                type: 'bar',
+                stacked: false,
+            },
+            dataLabels: {
+                enabled: false
+            },
+            stroke: {
+                width: [1, 1]
+            },
+            title: {
+                text: 'Machine Stoppage / Machine Waiting',
+                align: 'center',
+                style: {
+                    fontWeight:  'bold',
+                    color:  '#263238'
+                },
+            },
+            colors: ['#FF5733', '#581845'],
+            xaxis: {
+                categories: stoppageChartData.labels
+            },
+            yaxis: [{
+                seriesName: 'No. of Times',
+                axisTicks: {
+                    show: true,
+                },
+                axisBorder: {
+                    show: true,
+                    color: '#FF5733'
+                },
+                labels: {
+                    style: {
+                        colors: '#FF5733',
+                    }
+                },
+                title: {
+                    text: "No. of Times",
+                    style: {
+                        color: '#FF5733',
+                    }
+                },
+                tooltip: {
+                    enabled: true
+                }
+            },
+            {
+                seriesName: 'Duration',
+                opposite: true,
+                axisTicks: {
+                    show: true,
+                },
+                axisBorder: {
+                    show: true,
+                    color: '#581845'
+                },
+                labels: {
+                    style: {
+                        colors: '#581845',
+                    }
+                },
+                title: {
+                    text: "Duration",
+                    style: {
+                        color: '#581845',
+                    }
+                },
+            }],
+            tooltip: {
+                fixed: {
+                    enabled: true,
+                    position: 'topLeft',
+                    offsetY: 30,
+                    offsetX: 60
+                },
+            },
+            legend: {
+                horizontalAlign: 'left',
+                offsetX: 40
+            }
+        };
+        var machineStoppage = new ApexCharts(document.querySelector("#machineStoppage"), machineStoppage);
+        machineStoppage.render();
+
+        let machineTimeRanges = JSON.parse('{{ machine_time_ranges_json|escapejs }}');
+        document.getElementById('carding-24').textContent = machineTimeRanges.Carding['>24'];
+        document.getElementById('breaker-24').textContent = machineTimeRanges.Breaker['>24'];
+        document.getElementById('unilap-24').textContent = machineTimeRanges.Unilap['>24'];
+        document.getElementById('comber-24').textContent = machineTimeRanges.Comber['>24'];
+        document.getElementById('finisher-24').textContent = machineTimeRanges.Finisher['>24'];
+        document.getElementById('rover-24').textContent = machineTimeRanges.Rover['>24'];
+
+        document.getElementById('carding-16-24').textContent = machineTimeRanges.Carding['16-24'];
+        document.getElementById('breaker-16-24').textContent = machineTimeRanges.Breaker['16-24'];
+        document.getElementById('unilap-16-24').textContent = machineTimeRanges.Unilap['16-24'];
+        document.getElementById('comber-16-24').textContent = machineTimeRanges.Comber['16-24'];
+        document.getElementById('finisher-16-24').textContent = machineTimeRanges.Finisher['16-24'];
+        document.getElementById('rover-16-24').textContent = machineTimeRanges.Rover['16-24'];
+
+        document.getElementById('carding-8-16').textContent = machineTimeRanges.Carding['8-16'];
+        document.getElementById('breaker-8-16').textContent = machineTimeRanges.Breaker['8-16'];
+        document.getElementById('unilap-8-16').textContent = machineTimeRanges.Unilap['8-16'];
+        document.getElementById('comber-8-16').textContent = machineTimeRanges.Comber['8-16'];
+        document.getElementById('finisher-8-16').textContent = machineTimeRanges.Finisher['8-16'];
+        document.getElementById('rover-8-16').textContent = machineTimeRanges.Rover['8-16'];
+
+        document.getElementById('carding-0-8').textContent = machineTimeRanges.Carding['0-8'];
+        document.getElementById('breaker-0-8').textContent = machineTimeRanges.Breaker['0-8'];
+        document.getElementById('unilap-0-8').textContent = machineTimeRanges.Unilap['0-8'];
+        document.getElementById('comber-0-8').textContent = machineTimeRanges.Comber['0-8'];
+        document.getElementById('finisher-0-8').textContent = machineTimeRanges.Finisher['0-8'];
+        document.getElementById('rover-0-8').textContent = machineTimeRanges.Rover['0-8'];
+
+        document.getElementById('carding-time').innerText = machineTimeDisplay.Carding;
+        document.getElementById('breaker-time').innerText = machineTimeDisplay.Breaker;
+        document.getElementById('comber-time').innerText = machineTimeDisplay.Comber;
+        document.getElementById('finisher-time').innerText = machineTimeDisplay.Finisher;
+        document.getElementById('unilap-time').innerText = machineTimeDisplay.Unilap;
+        document.getElementById('roving-time').innerText = machineTimeDisplay.Rover;
+        const totalHours = Object.values(machineTimeDisplay).reduce((total, time) => {
+            const [hours, minutes] = time.split('h').map(part => part.trim());
+            return total + parseInt(hours) + parseInt(minutes) / 60;
+        }, 0);
+        const totalH = Math.floor(totalHours);
+        const totalM = Math.round((totalHours - totalH) * 60);
+        document.getElementById('total-time').innerText = `${totalH}h ${totalM}m`;
+
+    </script>
+{% endblock %}

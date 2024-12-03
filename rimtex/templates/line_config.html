@@ -1,0 +1,152 @@
+{% extends 'topbar.html' %}
+{% load static %}
+{% block head %}
+    <title>Select Machine Types</title>
+    <script src="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow/dist/drawflow.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/js/all.min.js" integrity="sha256-KzZiKy0DWYsnwMF+X1DvQngQ2/FxF7MF3Ff72XcpuPs=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow@0.0.48/dist/drawflow.min.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/beautiful.css' %}" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+    <script src="https://unpkg.com/micromodal/dist/micromodal.min.js"></script>
+{% endblock %}
+
+{% block content %}
+    {% include 'user_navbar.html' %}
+    <div class="content p-4">
+        <div class="intro-y w-full pr-1 flex flex-col justify-center items-center">
+            <div class="w-8/12 p-1 border border-dashed border-gray-400 rounded-md">
+                <div class="pos__tabs flex">
+                    <a href="{% url 'editMillLine' line_id %}" class="flex-1 py-1 px-1 rounded-md text-sm text-center">Line Details</a> 
+                    <a href="{% url 'millLineSelectPattern' line_id %}" class="flex-1 py-1 px-1 rounded-md text-sm text-center cursor-pointer">Select Pattern</a>
+                    <a href="{% url 'millLineSelectMachine' line_id %}" class="flex-1 py-1 px-1 rounded-md text-sm text-center cursor-pointer">Select Machine</a>
+                    <a href="{% url 'millLineConfigLine' line_id %}" class="flex-1 py-1 px-1 rounded-md text-sm text-center cursor-pointer bg-theme-6 text-white">Configure Line</a>
+                </div>
+            </div>
+        </div>
+        <div class="tab-content h-full p-8 mt-4 w-full flex justify-center">                     
+            <div class="tab-content__pane w-full flex justify-center active">
+                <div class="col-right w-full">
+                    <div class="flex gap-2">
+                        <select id="node-select" data-hide-search="true" class="w-2/12 select2">
+                            <!-- Options will be populated dynamically -->
+                        </select>
+                        <button id="add-node-button" class="button bg-theme-1 text-white">Add Machine</button>
+                        <button id="save-layout-button" class="button bg-theme-1 text-white">Save Layout</button>
+                    </div>
+                    <div id="drawflow" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let nodeCount = 0;
+            const id = document.getElementById("drawflow");
+            const existingLayoutData = {{ layout_data|safe }};
+            const machinesData = {{ filtered_machines_data|safe }};
+            console.log(machinesData);
+            const editor = new Drawflow(id);
+            editor.reroute = true;
+            editor.start();
+
+            if (existingLayoutData) {
+                editor.import(existingLayoutData);
+            }
+
+            editor.on('nodeCreated', function(id) { console.log("Node created " + id); });
+            editor.on('nodeRemoved', function(id) { console.log("Node removed " + id); });
+            editor.on('nodeSelected', function(id) { console.log("Node selected " + id); });
+            editor.on('connectionCreated', function(connection) { console.log('Connection created', connection); });
+            editor.on('connectionRemoved', function(connection) { console.log('Connection removed ' + connection); });
+            editor.on('addReroute', function(id) { console.log("Reroute added " + id); });
+            editor.on('removeReroute', function(id) { console.log("Reroute removed " + id); });
+
+    
+            const select = document.getElementById('node-select');
+            if (select) {
+                select.innerHTML = '<option value="">Select a Machine</option>';
+                machinesData.forEach(machine => {
+                    const option = document.createElement('option');
+                    option.value = machine.id;
+                    option.textContent = machine.machine_name;
+                    select.appendChild(option);
+                });
+            }
+    
+            function addNode() {
+                const nodeId = document.getElementById('node-select').value;
+                if (!nodeId) {
+                    console.error("No machine selected");
+                    return;
+                }
+    
+                const machine = machinesData.find(m => m.id == nodeId);
+                if (!machine) {
+                    console.error("Machine not found");
+                    return;
+                }
+    
+                const nodeImage = `/media/${machine.image}`;
+                const pos_x = 100 + (nodeCount * 50);
+                const pos_y = 100;
+                const nodeHtml = `
+                    <div class="node-container">
+                        <div class="node-box">
+                            <div class="image-preview" style="width: 250px; height: 100px; overflow: hidden;">
+                                <img src="${nodeImage}" alt="Node Image" style="max-width: 100%; max-height: 100%;" />
+                            </div>
+                        </div>
+                        <span style="display: grid; grid-template-columns: repeat(6, 2fr); gap: 15px 10px; position: absolute; left: -93%; top: 50%; transform: translateY(-50%); z-index: 0;">
+                            ${Array.from({ length: machine.num_inputs }, (_, i) => `<p style="width: 20px; height: 20px; text-align: center; background-color: #1e3a8a; color:#fff; border-radius: 100%; font-size: 7pt; padding: 3px 5px;">${i + 1}</p>`).join('')}
+                        </span>
+                        <div style="margin-right: -13%; margin-top: 13%; display: flex; flex-direction: column; gap: 2px; ">
+                            ${Array.from({ length: machine.num_outputs }, (_, i) => `<div style="width: 20px; height: 20px; text-align: center; color:#fff; border-radius: 100%; font-size: 8.5pt; background-color: #1e3a8a;">${i + 1}</div>`).join('')}
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 5px;">${machine.machine_name}</div>
+                    `;
+    
+                try {
+                    editor.addNode(machine.machine_name, machine.num_inputs, machine.num_outputs, pos_x, pos_y, 'image_node', { image: nodeImage }, nodeHtml);
+                    nodeCount++;
+                } catch (error) {
+                    console.error("Error adding node:", error);
+                }
+            }
+    
+            document.getElementById('add-node-button').addEventListener('click', addNode);
+    
+            function saveLayout() {
+                const flowData = editor.export();
+                const lineId = '{{ line_id }}';
+                console.log(flowData);
+                fetch('/save_line_layout/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}',
+                    },
+                    body: JSON.stringify({ layout_data: flowData, line_id: lineId })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(errData => {
+                            throw new Error(errData.error || 'Failed to save layout');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    Swal.fire('Success', 'Layout saved successfully!', 'success');
+                })
+                .catch(error => {
+                    console.error('Error saving layout:', error);
+                    Swal.fire('Error', error.message, 'error');
+                });
+            }
+            document.getElementById('save-layout-button').addEventListener('click', saveLayout);
+        });
+    </script>
+    
+{% endblock %}

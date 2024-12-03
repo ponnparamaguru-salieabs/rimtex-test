@@ -1,0 +1,154 @@
+{% extends 'topbar.html' %}
+{% load static %}
+
+{% block head %}
+    <title>Edit Machine</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+    {% include 'admin_navbar.html' %}
+    <!-- BEGIN: Content -->
+    <div class="content p-6">
+        <div class="intro-y flex items-center mt-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mr-auto">
+                Edit Machine
+            </h2>
+        </div>
+        <div class="intro-y col-span-12 lg:col-span-6">
+            <!-- BEGIN: Input -->
+            <div class="intro-y bg-white shadow-lg rounded-lg mt-4">
+                <div class="flex flex-col sm:flex-row items-center p-5 border-b border-gray-200 bg-gray-50 rounded-t-lg">
+                    <h2 class="font-semibold text-lg text-gray-700 mr-auto">
+                        Input
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="space-y-4 md:col-span-1">
+                                <!-- Machine Type -->
+                                <div class="mb-4">
+                                    <label for="type" class="block text-sm font-medium text-gray-700 mb-1">Machine Type</label>
+                                    <select 
+                                        name="type" 
+                                        id="type" 
+                                        class="select2 w-8/12 md:w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                    >
+                                        <option value="Carding" {% if machine.type == 'Carding' %}selected{% endif %}>Carding Machine</option>
+                                        <option value="Breaker" {% if machine.type == 'Breaker' %}selected{% endif %}>Breaker Machine</option>
+                                        <option value="Unilap" {% if machine.type == 'Unilap' %}selected{% endif %}>Unilap Machine</option>
+                                        <option value="Comber" {% if machine.type == 'Comber' %}selected{% endif %}>Comber Machine</option>
+                                        <option value="Finisher" {% if machine.type == 'Finisher' %}selected{% endif %}>Finisher Machine</option>
+                                        <option value="Roving" {% if machine.type == 'Roving' %}selected{% endif %}>Roving Machine</option>
+                                    </select>                                                                   
+                                </div>
+                                
+                                <!-- Machine Code -->
+                                <div class="mb-4">
+                                    <label for="code" class="block text-sm font-medium text-gray-700 mb-1">Machine Code</label>
+                                    <input type="text" name="code" id="code" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" value="{{ machine.code }}" required>
+                                </div>
+
+                                <!-- Machine Model -->
+                                <div class="mb-4">
+                                    <label for="model" class="block text-sm font-medium text-gray-700 mb-1">Machine Model</label>
+                                    <input type="text" name="model" id="model" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" value="{{ machine.model }}" required>
+                                </div>
+
+                                <!-- Year of Manufacture -->
+                                <div class="mb-4">
+                                    <label for="make_year" class="block text-sm font-medium text-gray-700 mb-1">Year of Manufacture</label>
+                                    <input type="number" name="make_year" id="make_year" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" value="{{ machine.make_year }}" required>
+                                </div>
+
+                                <!-- Design -->
+                                <div class="mb-4">
+                                    <label for="design" class="block text-sm font-medium text-gray-700 mb-1">Design</label>
+                                    <input type="text" name="design" id="design" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" value="{{ machine.design }}" required>
+                                </div>
+
+                                <!-- Manufacturer -->
+                                <div class="mb-4">
+                                    <label for="manufacturer" class="block text-sm font-medium text-gray-700 mb-1">Manufacturer</label>
+                                    <input type="text" name="manufacturer" id="manufacturer" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" value="{{ machine.manufacturer }}" required>
+                                </div>
+                            </div>
+                            <div class="space-y-4 md:col-span-1">
+                                <!-- Number of Inputs -->
+                                <div class="mb-4">
+                                    <label for="num_inputs" class="block text-sm font-medium text-gray-700 mb-1">Number of Inputs</label>
+                                    <input type="number" name="num_inputs" id="num_inputs" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" value="{{ machine.num_inputs }}" required>
+                                </div>
+
+                                <!-- Number of Outputs -->
+                                <div class="mb-4">
+                                    <label for="num_outputs" class="block text-sm font-medium text-gray-700 mb-1">Number of Outputs</label>
+                                    <input type="number" name="num_outputs" id="num_outputs" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" value="{{ machine.num_outputs }}" required>
+                                </div>
+
+                                <!-- Upload Image -->
+                                <div class="mb-4">
+                                    <label for="image" class="block text-sm font-medium text-gray-700 mb-1">Machine Image</label>
+                                    <div class="dropzone p-6 rounded-md" style="border: 2px dashed #d1d5db; border-radius: 0.375rem;" id="myDropzone">
+                                        <div class="dz-message" data-dz-message>
+                                            <input type="hidden" name="image" id="image">
+                                            {% if machine.image %}
+                                            <div class="flex justify-center">
+                                                <div class="h-32 w-1/2">
+                                                    <img src="{{ machine.image.url }}" alt="Machine Image" class="w-full my-3">
+                                                </div>
+                                            </div>
+                                            {% else %}
+                                            <div class="text-lg font-medium">Drop files here or click to upload.</div>
+                                            <div class="text-gray-600">This is just a demo dropzone. Selected files are <span class="font-medium">not</span> actually uploaded.</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Status Checkbox -->
+                                <div class="mb-4">
+                                    <label for="status" class="flex items-center text-sm font-medium text-gray-700">
+                                        <input type="checkbox" name="status" id="status" class="form-checkbox h-5 w-5 text-indigo-600 transition duration-150 ease-in-out" {% if machine.status %}checked{% endif %}>
+                                        <span class="ml-2">Active</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-end gap-4 mt-5"> 
+                            <button type="submit" class="button bg-theme-1 text-white py-2 px-4 rounded-lg shadow-md hover:bg-theme-21 transition duration-150 ease-in-out">Save</button> 
+                            <a href="{% url 'machineList' %}" class="button bg-gray-200 text-gray-600 py-2 px-4 rounded-lg shadow-md hover:bg-gray-300 transition duration-150 ease-in-out">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    <!-- END: Content -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.js"></script>
+    <script>
+        var myDropzone = new Dropzone("#myDropzone", {
+        url: "{% url 'file_upload' %}",
+        maxFiles: 1,
+        maxFilesize: 2,
+        acceptedFiles: "image/*",
+        addRemoveLinks: true,
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        dictDefaultMessage: "Drop files here or click to upload.",
+        dictRemoveFile: "Remove",
+        init: function() {
+            this.on("success", function(file, response) {
+                console.log("File uploaded successfully:", response);
+                document.getElementById('image').value = response.fileUrl;
+            });
+            this.on("error", function(file, response) {
+                console.error("Error uploading file:", response);
+            });
+        }
+    });
+    </script>   
+{% endblock %}

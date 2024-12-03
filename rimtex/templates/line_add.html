@@ -1,0 +1,355 @@
+{% extends 'topbar.html' %}
+{% load static %}
+{% load form_filters %}
+{% block head %}
+    <title>Add Line</title>
+    <script src="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow/dist/drawflow.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/js/all.min.js" integrity="sha256-KzZiKy0DWYsnwMF+X1DvQngQ2/FxF7MF3Ff72XcpuPs=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow@0.0.48/dist/drawflow.min.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/beautiful.css' %}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css" integrity="sha256-h20CPZ0QyXlBuAw7A+KluUYx/3pK+c7lYEpqLTlxjYQ=" crossorigin="anonymous" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+    <script src="https://unpkg.com/micromodal/dist/micromodal.min.js"></script>
+{% endblock %}
+{% block content %}
+    {% include 'user_navbar.html' %}
+    <div class="content p-4">
+        <div class="intro-y w-full pr-1 flex flex-col justify-center items-center">
+            <div class=" w-8/12 p-1 border border-dashed border-gray-400 rounded-md">
+                <div class="pos__tabs nav-tabs flex"> 
+                    <a data-toggle="tab" data-target="#lineDetails" href="javascript:;" class="flex-1 py-1 px-1 rounded-md text-sm text-center active">Line Details</a> 
+                    <a data-toggle="tab" data-target="#selectMachine" href="javascript:;" class="flex-1 py-1 px-1 rounded-md text-sm text-center">Select Machine</a> 
+                    <a data-toggle="tab" data-target="#configLine" href="javascript:;" class="flex-1 py-1 px-1 rounded-md text-sm text-center">Configure Line</a> 
+                    <a data-toggle="tab" data-target="#setLine" href="javascript:;" class="flex-1 py-1 px-1 rounded-md text-sm text-center">Setup Line</a> 
+                </div>
+            </div>
+            <div class="tab-content h-full p-8 mt-4 w-full flex justify-center">
+                <div class="tab-content__pane w-full flex justify-center active" id="lineDetails">
+                    <div class="intro-y box">
+                        <div class="flex flex-col sm:flex-row items-center p-5 border-b border-gray-200">
+                            <h2 class="font-medium text-base mr-auto">Enter Line Details</h2>
+                        </div>
+                        <div class="p-5" id="input">
+                            <div class="preview">
+                                <div> 
+                                    <label>Line Name</label> 
+                                    <input type="text" class="input w-full border my-3" placeholder="Line Name"> 
+                                </div>
+                                <div> 
+                                    <label>Line Description</label> 
+                                    <input type="text" class="input w-full border my-3" placeholder="Line Description"> 
+                                </div>
+                                <div> 
+                                    <label>Line Starting Date</label> 
+                                    <input class="datepicker input w-full border my-3" placeholder="Line Name"> 
+                                </div>
+                                <div> 
+                                    <label>Line Ending Date</label> 
+                                    <input class="datepicker input w-full border my-3" placeholder="Line Description"> 
+                                </div>
+                                <div class="flex justify-end gap-3">
+                                    <button type="button" class="button border-none bg-gray-500 text-white mt-5">Cancel</button>
+                                    <button type="button" class="button border-none bg-theme-1 text-white mt-5">Save & Continue</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>                         
+                <div class="tab-content__pane w-full" id="selectMachine">
+                    <div class="intro-y box sm:py-10">
+                        <div class="wizard flex flex-col lg:flex-row justify-center mt-10 px-5 sm:px-20 relative">
+                            <!-- Step Indicators -->
+                            <div class="intro-x lg:text-center flex items-center lg:block flex-1 z-10" data-step="1">
+                                <button class="w-10 h-10 rounded-full button step-button border-none text-black bg-theme-1" onclick="goToStep(1)">1</button>
+                                <div class="lg:w-32 text-base lg:mt-3 ml-3 lg:mx-auto">Select Carding Machine</div>
+                            </div>
+                            <div class="intro-x lg:text-center flex items-center mt-5 lg:mt-0 lg:block flex-1 z-10" data-step="2">
+                                <button class="w-10 h-10 rounded-full button step-button border-none text-black bg-gray-200" onclick="goToStep(2)">2</button>
+                                <div class="lg:w-32 text-base lg:mt-3 ml-3 lg:mx-auto">Select Breaker Machine</div>
+                            </div>
+                            <div class="intro-x lg:text-center flex items-center mt-5 lg:mt-0 lg:block flex-1 z-10" data-step="3">
+                                <button class="w-10 h-10 rounded-full button step-button border-none text-black bg-gray-200" onclick="goToStep(3)">3</button>
+                                <div class="lg:w-32 text-base lg:mt-3 ml-3 lg:mx-auto">Select Unilap Machine</div>
+                            </div>
+                            <div class="intro-x lg:text-center flex items-center mt-5 lg:mt-0 lg:block flex-1 z-10" data-step="4">
+                                <button class="w-10 h-10 rounded-full button step-button border-none text-black bg-gray-200" onclick="goToStep(4)">4</button>
+                                <div class="lg:w-32 text-base lg:mt-3 ml-3 lg:mx-auto">Select Comber Machine</div>
+                            </div>
+                            <div class="intro-x lg:text-center flex items-center mt-5 lg:mt-0 lg:block flex-1 z-10" data-step="5">
+                                <button class="w-10 h-10 rounded-full button step-button border-none text-black bg-gray-200" onclick="goToStep(5)">5</button>
+                                <div class="lg:w-32 text-base lg:mt-3 ml-3 lg:mx-auto">Select Finisher Machine</div>
+                            </div>
+                            <div class="intro-x lg:text-center flex items-center mt-5 lg:mt-0 lg:block flex-1 z-10" data-step="6">
+                                <button class="w-10 h-10 rounded-full button step-button border-none text-black bg-gray-200" onclick="goToStep(6)">6</button>
+                                <div class="lg:w-32 text-base lg:mt-3 ml-3 lg:mx-auto">Select Roving Machine</div>
+                            </div>
+                            <div class="wizard__line hidden lg:block w-2/3 bg-gray-200 absolute mt-5"></div>
+                        </div>
+                        <div class="flex justify-center items-center w-full">
+                            <div class="step-content w-full px-2">
+                                <div class="step-box intro-y py-5" data-step="1">
+                                    <div class="intro-y datatable-wrapper box mt-10 shadow-none">
+                                        <table class="table table-report table-report--bordered display datatable">
+                                            <thead>
+                                                <tr>
+                                                    <th class="border-b-2 whitespace-no-wrap">SI NO</th>
+                                                    <th class="border-b-2 whitespace-no-wrap">NAME</th>
+                                                    <th class="border-b-2 text-center whitespace-no-wrap">MODEL</th>
+                                                    <th class="border-b-2 text-center whitespace-no-wrap">SILVER LOADING TIME</th>
+                                                    <th class="border-b-2 text-center whitespace-no-wrap">SILVER UNLOADING TIME</th>
+                                                    <th class="border-b-2 text-center whitespace-no-wrap">AVAILABLE</th>
+                                                    <th class="border-b-2 text-center whitespace-no-wrap">ACTIONS</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="text-left border-b">1</td>
+                                                    <td class="border-b">
+                                                        <div class="font-medium whitespace-no-wrap">Carding-01</div>
+                                                    </td>
+                                                    <td class="border-b text-center">
+                                                        <div class="font-medium whitespace-no-wrap">SN-PC</div>
+                                                    </td>
+                                                    <td class="text-center border-b">40</td>
+                                                    <td class="text-center border-b">130</td>
+                                                    
+                                                    
+                                                    <td class="w-40 border-b">
+                                                        <div class="flex items-center sm:justify-center text-theme-9"> YES </div>
+                                                    </td>
+                                                    <td class="border-b w-5">
+                                                        <div class="flex sm:justify-center items-center">
+                                                            <a class="flex items-center mr-3"> 
+                                                                <input class="input flex-none border border-gray-500" type="checkbox" >
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <div class="flex justify-end mt-5">
+                                            <a href="javascript:;" data-toggle="modal" data-target="#addShiftModal" class="button inline-block bg-theme-1 w-20 text-white">Set</a>
+                                        </div>
+                                        <div class="modal" id="addShiftModal">
+                                            <div class="modal__content">
+                                                <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200">
+                                                    <h2 class="font-medium text-base mr-auto">Add Silver Loading/Unloading</h2>
+                                                </div>
+                                                <div class="p-5 grid grid-cols-12 gap-4 row-gap-3">
+                                                    <div class="col-span-12 sm:col-span-6">
+                                                        <label for="loading-detail-m">Silver Loading Details (m/Can)</label>
+                                                        <input type="number" id="loading-detail-m" class="input w-full border mt-2 flex-1" placeholder="Enter loading time">
+                                                    </div>
+                                                    <div class="col-span-12 sm:col-span-6">
+                                                        <label for="unloading-detail-m">Silver Unloading Details (m/Can)</label>
+                                                        <input type="number" id="unloading-detail-m" class="input w-full border mt-2 flex-1" placeholder="Enter unloading time">
+                                                    </div>
+                                                    <div class="col-span-12 sm:col-span-6">
+                                                        <label for="loading-detail-kg">Silver Loading in Kg/Can</label>
+                                                        <input type="number" id="loading-detail-kg" class="input w-full border mt-2 flex-1" placeholder="Enter loading time">
+                                                    </div>
+                                                    <div class="col-span-12 sm:col-span-6">
+                                                        <label for="unloading-detail-kg">Silver Unloading in Kg/Can</label>
+                                                        <input type="number" id="unloading-detail-kg" class="input w-full border mt-2 flex-1" placeholder="Enter unloading time">
+                                                    </div>
+                                                    <div class="col-span-12 sm:col-span-6">
+                                                        <label for="loading-time-mins">Silver Loading Time (Mins)</label>
+                                                        <input type="number" id="loading-time-mins" class="input w-full border mt-2 flex-1" placeholder="Enter loading time">
+                                                    </div>
+                                                    <div class="col-span-12 sm:col-span-6">
+                                                        <label for="unloading-time-mins">Silver Unloading Time (Mins)</label>
+                                                        <input type="number" id="unloading-time-mins" class="input w-full border mt-2 flex-1" placeholder="Enter unloading time">
+                                                    </div>
+                                                </div>
+                                                <div class="px-5 py-3 text-right border-t border-gray-200">
+                                                    <button type="button" class="button w-20 border text-gray-700 bg-gray-300 border-none mr-1" data-dismiss="modal">Cancel</button>
+                                                    <button type="button" class="button w-20 bg-theme-1 border-none text-white" id="submit-time">Add</button>
+                                                </div>
+                                            </div>  
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="step-box intro-y p-10 hidden" data-step="2">
+                                    <h1 class="text-center text-2xl font-bold">Step 2: Select Breaker Machine</h1>
+                                    <p class="text-center">Select a breaker machine that meets your needs.</p>
+                                    <!-- Add your content here -->
+                                </div>
+                                <div class="step-box intro-y p-10 hidden" data-step="3">
+                                    <h1 class="text-center text-2xl font-bold">Step 3: Select Unilap Machine</h1>
+                                    <p class="text-center">Find the right unilap machine for your process.</p>
+                                    <!-- Add your content here -->
+                                </div>
+                                <div class="step-box intro-y p-10 hidden" data-step="4">
+                                    <h1 class="text-center text-2xl font-bold">Step 4: Select Comber Machine</h1>
+                                    <p class="text-center">Choose a comber machine for optimal performance.</p>
+                                    <!-- Add your content here -->
+                                </div>
+                                <div class="step-box intro-y p-10 hidden" data-step="5">
+                                    <h1 class="text-center text-2xl font-bold">Step 5: Select Finisher Machine</h1>
+                                    <p class="text-center">Select a finisher machine to complete your process.</p>
+                                    <!-- Add your content here -->
+                                </div>
+                                <div class="step-box intro-y p-10 hidden" data-step="6">
+                                    <h1 class="text-center text-2xl font-bold">Step 6: Select Roving Machine</h1>
+                                    <p class="text-center">Choose a roving machine to finalize your product.</p>
+                                    <!-- Add your content here -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="intro-y col-span-12 flex items-center justify-center gap-4 sm:justify-center mb-10">
+                            <button id="prevStep" class="button border-none w-24 justify-center block bg-gray-200 text-gray-600" onclick="goToStep(currentStep - 1)" disabled>Previous</button>
+                            <button id="nextStep" class="button border-none w-24 justify-center block bg-theme-1 text-white" onclick="goToStep(currentStep + 1)">Next</button>
+                        </div>
+                    </div>                    
+                </div>
+
+                <div class="tab-content__pane w-full" id="configLine">
+                    <div class="col-right w-full">
+                        <div class="flex gap-2">
+                            <select id="node-select" data-hide-search="true" class="w-2/12 select2">
+                                <!-- Options will be populated dynamically -->
+                            </select>
+                            <button id="add-node-button" class="button bg-theme-1 text-white">Add Machine</button>
+                        </div>
+                        <div id="drawflow" class="mt-3">
+                        </div>
+                    </div>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            let currentFlowId = null;
+                            let nodeCount = 0;
+                
+                            const id = document.getElementById("drawflow");
+                            if (!id) {
+                                console.error("Drawflow container not found");
+                                return;
+                            }
+                
+                            const editor = new Drawflow(id);
+                            editor.reroute = true;
+                            editor.zoom_min = 0.5;
+                            editor.start();
+                
+                            fetch('line-add/api/machine/')
+                                .then(response => response.json())
+                                .then(machines => {
+                                    const select = document.getElementById('node-select');
+                                    if (!select) {
+                                        console.error("Node select element not found");
+                                        return;
+                                    }
+                                    select.innerHTML = '<option value="">Select a Machine</option>';
+                                    machines.forEach(machine => {
+                                        const option = document.createElement('option');
+                                        option.value = machine.id;
+                                        option.textContent = machine.machine_name;
+                                        select.appendChild(option);
+                                    });
+                                });
+                
+                            function addNode() {
+                                const nodeId = document.getElementById('node-select').value;
+                                if (!nodeId) {
+                                    console.error("No machine selected");
+                                    return;
+                                }
+                
+                                fetch('line-add/api/machine/')
+                                    .then(response => response.json())
+                                    .then(machines => {
+                                        const machine = machines.find(m => m.id == nodeId);
+                                        if (!machine) {
+                                            console.error("Machine not found");
+                                            return;
+                                        }
+                                        const nodeImage = `/media/${machine.image}`;
+                                        const pos_x = 100 + (nodeCount * 50);
+                                        const pos_y = 100;
+                                        const nodeHtml = `
+                                            <div class="node-container">
+                                                <div class="node-box">
+                                                    <div class="image-preview" style="width: 100px; height: 100px; overflow: hidden;">
+                                                        <img src="${nodeImage}" alt="Node Image" style="max-width: 100%; max-height: 100%;" />
+                                                    </div>
+                                                </div>
+                                                <span style="display: grid; grid-template-columns: repeat(6, 2fr); gap: 15px 10px ; position: absolute; left: -93%; top: 50%; transform: translateY(-50%); z-index: 0;">
+                                                    ${Array.from({ length: machine.num_inputs }, (_, i) => `<p style="width: 20px; height: 20px; text-align: center; background-color: #1e3a8a; color:#fff; border-radius: 100%; font-size: 7pt; padding: 3px 5px;">${i + 1}</p>`).join('')}
+                                                </span>
+                                                <div style="margin-right: -13%; display: flex; flex-direction: column; gap: 4px;">
+                                                    ${Array.from({ length: machine.num_outputs }, (_, i) => `<div style="width: 20px; height: 20px; text-align: center; color:#fff; border-radius: 100%; font-size: 8.5pt; background-color: #1e3a8a;">${i + 1}</div>`).join('')}
+                                                </div>
+                                            </div>`;
+                
+                
+                                        console.log("Adding node:", machine.type, machine.num_inputs, machine.num_outputs, pos_x, pos_y, 'image_node', { image: nodeImage }, nodeHtml);
+                
+                                        try {
+                                            editor.addNode(machine.type, machine.num_inputs, machine.num_outputs, pos_x, pos_y, 'image_node', { image: nodeImage }, nodeHtml);
+                                            nodeCount++;
+                                        } catch (error) {
+                                            console.error("Error adding node:", error);
+                                        }
+                                    });
+                            }
+                
+                            const addNodeButton = document.getElementById('add-node-button');
+                            if (addNodeButton) {
+                                addNodeButton.addEventListener('click', addNode);
+                            } else {
+                                console.error("Add Node button not found");
+                            }
+                        });
+                    </script>
+                </div>
+                <div class="tab-content__pane w-full flex justify-center" id="setLine">
+                    <div class="intro-y box w-2/6">
+                        <div class="flex flex-col sm:flex-row items-center p-5 border-b border-gray-200">
+                            <h2 class="font-medium text-base mr-auto">
+                                Enter Line Starting and Ending Timing
+                            </h2>
+                        </div>
+                        <div class="p-5" id="input">
+                            <div class="preview">
+                                
+                                
+                                <div class="flex justify-end gap-3">
+                                    <button type="button" class="button border-none bg-gray-500 text-white mt-5">Skip</button>
+                                    <button type="button" class="button border-none bg-theme-1 text-white mt-5">Complete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        let currentStep = 1;
+        const totalSteps = 6;
+        function goToStep(step) {
+            if (step < 1 || step > totalSteps) return;
+            document.querySelectorAll('.step-box').forEach(box => {
+                box.classList.add('hidden');
+            });
+            document.querySelector(`.step-box[data-step="${step}"]`).classList.remove('hidden');
+            currentStep = step;
+
+            document.querySelectorAll('.step-button').forEach((btn, index) => {
+                if (index + 1 === currentStep) {
+                    btn.classList.remove('bg-gray-200');
+                    btn.classList.add('bg-theme-1', 'text-white');
+                } else {
+                    btn.classList.add('bg-gray-200');
+                    btn.classList.remove('bg-theme-1', 'text-white');
+                }
+            });
+            updateNavigation();
+        }
+        function updateNavigation() {
+            document.getElementById('prevStep').disabled = (currentStep === 1);
+            document.getElementById('nextStep').disabled = (currentStep === totalSteps);
+        }
+        goToStep(currentStep);
+    </script>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends 'topbar.html' %}
+{% load static %}
+
+{% block head %}
+    <title>Admin logs</title>
+{% endblock %}
+
+{% block content %}
+    {% include 'admin_navbar.html' %}
+    <div class="content">
+        <div class="intro-y flex flex-col sm:flex-row items-center mt-8">
+            <h2 class="text-lg text-theme-6 font-medium mr-auto">
+                Logs List
+            </h2>
+        </div>
+        <div class="intro-y datatable-wrapper box p-5 mt-5">
+            <table class="table table-report table-report--bordered display datatable w-full">
+                <thead>
+                    <tr>
+                        <th class="border-b-2 whitespace-no-wrap">SI NO</th>
+                        <th class="border-b-2 text-center whitespace-no-wrap">ACTION</th>
+                        <th class="border-b-2 text-center whitespace-no-wrap">MODEL</th>
+                        <th class="border-b-2 text-center whitespace-no-wrap">USER</th>
+                        <th class="border-b-2 text-center whitespace-no-wrap">TIMESTAMP</th>
+                        <th class="border-b-2 text-center whitespace-no-wrap">DETAILS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td class="border-b">
+                            <div class="font-medium whitespace-no-wrap">{{ forloop.counter }}</div>
+                        </td>
+                        <td class="border-b">
+                            <div class="font-medium whitespace-no-wrap text-center">{{ log.action }}</div>
+                        </td>
+                        <td class="text-center border-b">{{ log.model_name }}</td>
+                        <td class="text-center border-b">{{ log.user.username }}</td>
+                        <td class="text-center border-b">{{ log.timestamp }}</td>                    
+                        <td class="text-center border-b">{{ log.details }}</td>                    
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <!-- END: Datatable -->
+    </div>
+{% endblock %}

@@ -1,0 +1,1001 @@
+{% extends 'topbar.html' %}
+{% load static %}
+{% block head %}
+    <title>Machine Configuration</title>
+    <style>
+        ::-webkit-file-upload-button {
+            color: white;
+            margin-right: 10px;
+            background: #1C3FAA; 
+            padding: 5px 10px; 
+            border: none;
+            border-radius: 5px; 
+            outline: none;
+            cursor: pointer; 
+        }
+        .datatable-wrapper{
+            overflow: auto;
+        }
+   </style>
+   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+   integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
+   integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
+<link rel="stylesheet" href="/static/rubic/Control.FullScreen.css">
+<script src="/static/rubic/Control.FullScreen.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+
+    <link href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css" rel="stylesheet">
+    <script type="text/javascript" src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/5.3.5/css/tabulator.min.css" rel="stylesheet">
+
+    <link href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css" rel="stylesheet">
+    <script type="text/javascript" src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
+    <!-- <link rel="stylesheet" href="{% static 'css/app_old.css'%}" /> -->
+{% endblock %}
+
+{% block content %}
+    {% include 'admin_navbar.html' %}
+    <!-- BEGIN: Content -->
+    <div class="content p-4">
+        <div class="intro-y w-full pr-1 flex flex-col justify-center items-center mt-10">
+            <div class="w-9/12 p-1 border border-dashed border-gray-400 rounded-md">
+                <div class="pos__tabs nav-tabs flex justify-around"> 
+                    <a data-toggle="tab" data-target="#dashboard" href="javascript:;" class="flex-1 py-1 px-1 rounded-md text-sm text-center active">Dashboard</a> 
+                    <a data-toggle="tab" data-target="#deviceTable" href="javascript:;" class="flex-1 py-1 px-1 rounded-md text-sm text-center">Device Table</a> 
+                    <a data-toggle="tab" data-target="#deviceMaster" href="javascript:;" class="flex-1 py-1 px-1 rounded-md text-sm text-center">Device Master</a> 
+                    <a data-toggle="tab" data-target="#tenants" href="javascript:;" class="flex-1 py-1 px-1 rounded-md text-sm text-center">Mills</a> 
+                    <a data-toggle="tab" data-target="#logs" href="javascript:;" class="flex-1 py-1 px-1 rounded-md text-sm text-center">Logs</a> 
+                    <a data-toggle="tab" data-target="#firmware" href="javascript:;" class="flex-1 py-1 px-1 rounded-md text-sm text-center">Updates</a>  
+                </div>
+            </div>  
+            <div class="tab-content p-8 mt-2 w-full flex justify-center">
+                <!-- <div class="tab-content__pane w-full flex flex-col justify-center active" id="dashboard">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+                        <div class="bg-gray-100 p-4 rounded-lg shadow">
+                            <h3 class="text-lg font-semibold mb-2">Tenants</h3>
+                            <div class="grid grid-cols-4 gap-2">
+                                <div class="bg-green-200 text-white rounded-lg w-auto flex flex-col h-auto p-3">
+                                    <span class="text-black font-medium">Active</span>
+                                    <span class="text-black text-6xl font-medium">1</span>
+                                </div>
+                                <div class="bg-red-200 text-white rounded-lg w-auto flex flex-col h-auto p-3">
+                                    <span class="text-black font-medium">Inactive</span>
+                                    <span class="text-black text-6xl font-medium">1</span>
+                                </div>
+                                <div class="bg-blue-200 text-white rounded-lg w-auto flex flex-col h-auto p-3">
+                                    <span class="text-black font-medium">Total</span>
+                                    <span class="text-black text-6xl font-medium">2</span>
+                                </div>
+                                <div class="bg-white rounded-lg mt-2 w-auto flex flex-col h-auto p-3">
+                                    <canvas id="donut-chart-widget" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    
+                        <div class="bg-gray-100 p-4 rounded-lg shadow">
+                            <h3 class="text-lg font-semibold mb-2">Devices</h3>
+                            <div class="grid grid-cols-4 gap-2">
+                                <div class="bg-green-200 text-white rounded-lg w-auto flex flex-col h-auto p-3">
+                                    <span class="text-black font-medium">Active</span>
+                                    <span class="text-black text-6xl font-medium">1</span>
+                                </div>
+                                <div class="bg-red-200 text-white rounded-lg w-auto flex flex-col h-auto p-3">
+                                    <span class="text-black font-medium">Inactive</span>
+                                    <span class="text-black text-6xl font-medium">1</span>
+                                </div>
+                                <div class="bg-blue-200 text-white rounded-lg w-auto flex flex-col h-auto p-3">
+                                    <span class="text-black font-medium">Total</span>
+                                    <span class="text-black text-6xl font-medium">2</span>
+                                </div>
+                                <div class="bg-white rounded-lg mt-2 w-auto flex flex-col h-auto p-3">
+                                    <canvas id="donut-chart-widget1" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                
+                        <div class="bg-gray-100 p-4 rounded-lg shadow">
+                            <h3 class="text-lg font-semibold mb-2">Customers</h3>
+                            <div class="grid grid-cols-4 gap-2">
+                                <div class="bg-green-200 text-white rounded-lg w-auto flex flex-col h-auto p-3">
+                                    <span class="text-black font-medium">Active</span>
+                                    <span class="text-black text-6xl font-medium">1</span>
+                                </div>
+                                <div class="bg-red-200 text-white rounded-lg w-auto flex flex-col h-auto p-3">
+                                    <span class="text-black font-medium">Inactive</span>
+                                    <span class="text-black text-6xl font-medium">1</span>
+                                </div>
+                                <div class="bg-blue-200 text-white rounded-lg w-auto flex flex-col h-auto p-3">
+                                    <span class="text-black font-medium">Total</span>
+                                    <span class="text-black text-6xl font-medium">2</span>
+                                </div>
+                                <div class="bg-white rounded-lg mt-2 w-auto flex flex-col h-auto p-3">
+                                    <canvas id="pie-chart-widget" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        Fourth Grid: Device Validity
+                        <div class="bg-gray-100 p-4 rounded-lg shadow">
+                            <h3 class="text-lg font-semibold mb-2">Device Validity</h3>
+                            <div class="grid grid-cols-4 gap-2">
+                                <div class="bg-green-200 text-white rounded-lg w-auto flex flex-col h-auto p-3">
+                                    <span class="text-black font-medium">Valid</span>
+                                    <span class="text-black text-6xl font-medium">1</span>
+                                </div>
+                                <div class="bg-red-200 text-white rounded-lg w-auto flex flex-col h-auto p-3">
+                                    <span class="text-black font-medium">Expired</span>
+                                    <span class="text-black text-6xl font-medium">1</span>
+                                </div>
+                                <div class="bg-blue-200 text-white rounded-lg w-auto flex flex-col h-auto p-3">
+                                    <span class="text-black font-medium">Total</span>
+                                    <span class="text-black text-6xl font-medium">2</span>
+                                </div>
+                                <div class="bg-white rounded-lg mt-2 w-auto flex flex-col h-auto p-3">
+                                    <canvas id="donut-chart-widget3" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> -->
+                <div class="tab-content__pane w-full flex flex-col justify-center active" id="dashboard">
+                    
+                    <div class="mt-6" style="display:flex;flex-direction:column">
+                        <div style="display:flex;flex-direction:row;justify-content:space-between;align-items:center">
+                            <div class="ml-1 text-lg font-medium">Device Details</div>
+                            <div><button class="button bg-theme-6 text-white" onclick="add_device()">Add Device</button></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mt-3">  
+                            <div class="box p-3">
+                                <div class="flex" style="justify-content:space-between;height:50px">
+                                    <div class="text-sm font-small mt-4 ">
+                                        Mills
+                                    </div >
+                                    <div><button class="button bg-theme-6 text-white " onclick="add_tenant()">Add Mill</button></div>
+                                </div>
+                                <div class="grid grid-cols-4 gap-2 mt-2 cards-container" >
+                                        <!-- First Card -->
+                                            <div class="card" style="background-color: rgb(232, 249, 214);height:50px">
+                                                <div style="text-align: left;padding-left: 5px;">Active</div>
+                                                <div  style="text-align: left;padding-left: 5px;font-size:large" id="active_tenants">1</div>
+                                            </div>
+                                        <!-- Second Card -->
+                                        <div class="card" style="background-color: rgb(247, 228, 228);height:50px">
+                                            <div style="text-align: left;padding-left: 5px;">Inactive</div>
+                                            <div  style="text-align: left;padding-left: 5px;font-size:large"id="inactive_tenants">1</div>
+                                        </div>
+                                        <!-- Third Card (Total) -->
+                                        <div class="card" style="height:50px">
+                                            <div style="text-align: left;padding-left: 5px;" >Total</div>
+                                            <div  style="text-align: left;padding-left: 5px;font-size:large"id="total_tenants">2</div>
+                                        </div> 
+                                        <div class="card" style="height:50px">    
+                                        <div id="donut-chart-tenant" style="height: 200px; width: 200px"></div>   
+                                        </div>          
+                                </div>
+                            </div> 
+                    
+                    
+                    
+                            <div class="box p-3">
+                                                    
+                                <div class="flex" style="justify-content:space-between;height:50px">
+                                    <div class="text-sm font-small mt-4 ">
+                                        Customers
+                                    </div>
+                                    
+                                    
+                                </div>
+                                <div class="grid grid-cols-4 gap-2 mt-2 cards-container" >
+                                        <!-- First Card -->
+                                            <div class="card" style="background-color: rgb(232, 249, 214);height:50px">
+                                                <div style="text-align: left;padding-left: 5px;">Active</div>
+                                                <div  style="text-align: left;padding-left: 5px;font-size:large" id="active_users">2</div>
+                                            </div>
+                                        <!-- Second Card -->
+                                        <div class="card" style="background-color: rgb(247, 228, 228);height:50px">
+                                            <div style="text-align: left;padding-left: 5px;">Inactive</div>
+                                            <div  style="text-align: left;padding-left: 5px;font-size:large"id="inactive_users">2</div>
+                                        </div>
+                                        <!-- Third Card (Total) -->
+                                        <div class="card" style="height:50px">
+                                            <div style="text-align: left;padding-left: 5px;" >Total</div>
+                                            <div  style="text-align: left;padding-left: 5px;font-size:large"id="total_users">4</div>
+                                        </div>     
+                                        <div class="card" style="height:50px">
+                                        <div id="donut-chart-customer" style="height: 200px; width: 200px"></div> 
+                                        </div> 
+                                </div>
+                            </div>         
+                        </div>
+                                    
+                    
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mt-3">
+                            <!-- Device Allocation -->
+                            <div class="box p-3">
+                                <div class="flex" style="justify-content:space-between;height:50px">
+                                    <div class="text-sm font-small mt-4">Device Allocation</div>
+                                    <div id="donut-chart-allocation" style="height: 230px; width: 230px"></div>
+                                </div>
+                                <div class="grid grid-cols-3 gap-2 mt-2">
+                                    <div class="card" style="background-color: rgb(232, 249, 214);">
+                                        <div style="text-align: left;padding-left: 5px;">Allocated</div>
+                                        <div style="text-align: left;padding-left: 5px;font-size:large" id="allocated_devices">2</div>
+                                    </div>
+                                    <div class="card" style="background-color: rgb(247, 228, 228);">
+                                        <div style="text-align: left;padding-left: 5px;">Unallocated</div>
+                                        <div style="text-align: left;padding-left: 5px;font-size:large" id="unallocated-devices">2</div>
+                                    </div>
+                                    <div class="card">
+                                        <div style="text-align: left;padding-left: 5px;">Total</div>
+                                        <div style="text-align: left;padding-left: 5px;font-size:large" id="total_allocation">4</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Device Status -->
+                            <div class="box p-3">
+                                <div class="flex" style="justify-content:space-between;height:50px">
+                                    <div class="text-sm font-small mt-4">Device Status</div>
+                                    <div id="donut-chart" style="height: 200px; width: 200px;margin-left:10px"></div>
+                                </div>
+                                <div class="grid grid-cols-3 gap-2 mt-2">
+                                    <div class="card" style="background-color: rgb(232, 249, 214);">
+                                        <div style="text-align: left;padding-left: 5px;">Online</div>
+                                        <div style="text-align: left;padding-left: 5px;font-size:large" id="online_devices">1</div>
+                                    </div>
+                                    <div class="card" style="background-color: rgb(247, 228, 228);">
+                                        <div style="text-align: left;padding-left: 5px;">Offline</div>
+                                        <div style="text-align: left;padding-left: 5px;font-size:large" id="offline_devices">1</div>
+                                    </div>
+                                    <div class="card">
+                                        <div style="text-align: left;padding-left: 5px;">Total</div>
+                                        <div style="text-align: left;padding-left: 5px;font-size:large" id="total_devices">2</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Device Validity -->
+                            <div class="box p-3" id="dvalidity">
+                                <div class="flex" style="justify-content:space-between;height:50px">
+                                    <div class="text-sm font-small mt-4">Device Validity</div>
+                                    <div id="donut-chart-validity" style="height: 210px; width: 210px"></div>
+                                </div>
+                                <div class="grid grid-cols-3 gap-4 mt-2">
+                                    <div class="card" style="background-color: rgb(232, 249, 214);">
+                                        <div style="text-align: left;padding-left: 5px;">Active</div>
+                                        <div style="text-align: left;padding-left: 5px;font-size:large" id="active_devices">1</div>
+                                    </div>
+                                    <div class="card" style="background-color: rgb(247, 228, 228);">
+                                        <div style="text-align: left;padding-left: 5px;">Inactive</div>
+                                        <div style="text-align: left;padding-left: 5px;font-size:large" id="inactive_devices">1</div>
+                                    </div>
+                                    <div class="card">
+                                        <div style="text-align: left;padding-left: 5px;">Total</div>
+                                        <div style="text-align: left;padding-left: 5px;font-size:large" id="total_activeinactive_devices">2</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container mt-6">
+                        <div class="map-container">
+                            <div class="text-lg font-medium mb-2" id="mapheading">
+                                Device Co-ordinates
+                            </div>
+                            <div class="flex flex-col md:flex-row md:items-end xl:items-start" id="filterfield">
+                                <form id="tabulator-html-filter-form" class="flex flex-col md:flex-row md:items-end xl:items-start md:mr-auto">
+                                    <div class="flex flex-col sm:flex-row items-center sm:mr-4">
+                                        <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Field</label>
+                                        <select id="tabulator-html-filter-field" class="select2 w-full sm:w-32 2xl:w-full mt-2 sm:mt-0">
+                                            <option value="device_id">Device ID</option>
+                                            <option value="tenant_name">Tenant Name</option>
+                                            <option value="customer_name">Customer Name</option>
+                                        </select>
+                                    </div>
+                    
+                                    <div class="flex flex-col sm:flex-row items-center sm:mr-4 mt-2 xl:mt-0">
+                                        <input id="tabulator-html-filter-value" type="text" class="input form-control sm:w-40 2xl:w-full mt-2 sm:mt-0" placeholder="Search...">
+                                    </div>
+                    
+                                    <div class="flex flex-col sm:flex-row mt-2 xl:mt-0">
+                                        <button id="tabulator-html-filter-go" type="button" class="button bg-theme-1 text-white">Go</button>
+                                        <button id="tabulator-html-filter-reset" type="button" class="button bg-theme-1 text-white w-full sm:w-16 mt-2 sm:mt-0 sm:ml-1" style="margin-right: 10px;">Reset</button>
+                                    </div>
+                                </form>
+                            </div>
+                            <div id="map" expand="false"></div>
+                        </div>
+                        <div class="tabulator-container">
+                            <div id="device-master-table"  class="my-table"></div>
+                        </div>
+                    </div>
+                    <div id="header-footer-modal-preview-tenant" class="modal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <!-- BEGIN: Modal Header -->
+                                <div class="modal-header">
+                                    <h2 class="font-medium text-base mr-auto">Enter the Tenant details </h2>
+                                </div>
+                                <!-- END: Modal Header -->
+                                <!-- BEGIN: Modal Body -->
+                                <div class="modal-body">
+                                    <form class="validate-form" id="form">
+                                        <input type="text" id="indexvalue-tenant" hidden>
+                
+                                        <div class="input-form mt-3"> <label for="validation-form-2"
+                                                class="form-label w-full flex flex-col sm:flex-row"> Tenant Label <span
+                                                    class="sm:ml-auto mt-1 sm:mt-0 text-xs text-slate-500">Required, at least 2
+                                                    characters
+                                                </span> </label> <input id="userlabel" type="text" name="label" class="form-control"
+                                                placeholder="label" required> </div>
+                
+                                        <div class="input-form mt-3"> <label for="validation-form-1"
+                                                class="form-label w-full flex flex-col sm:flex-row"> Username <span
+                                                    class="sm:ml-auto mt-1 sm:mt-0 text-xs text-slate-500">Required, at least 2
+                                                    characters</span> </label> <input id="tenant_name" type="text" name="name"
+                                                class="form-control" placeholder="Username" minlength="2" required> </div>
+                                        <div class="input-form mt-3" id="passwordfield"> <label for="validation-form-3"
+                                                    class="form-label w-full flex flex-col sm:flex-row"> Password <span
+                                                        class="sm:ml-auto mt-1 sm:mt-0 text-xs text-slate-500">Required, at least 6
+                                                        characters</span> </label> <input id="tenant_password" type="password"
+                                                    name="password" class="form-control" placeholder="password" minlength="6" required>
+                                        </div>
+                
+                                        <div class="input-form mt-3"> <label for="validation-form-2"
+                                                class="form-label w-full flex flex-col sm:flex-row"> Email <span
+                                                    class="sm:ml-auto mt-1 sm:mt-0 text-xs text-slate-500">Required, email address
+                                                    format</span> </label> <input id="tenant_email" type="email" name="email"
+                                                class="form-control" placeholder="example@gmail.com" required> </div>
+                
+                                       
+                                        <div class="input-form mt-3"> <label for="validation-form-4"
+                                                class="form-label w-full flex flex-col sm:flex-row"> Phone Number <span
+                                                    class="sm:ml-auto mt-1 sm:mt-0 text-xs text-slate-500">Required, integer only &
+                                                    maximum
+                                                    10 characters</span> </label><input id="tenant_number" type="tel" name="phonenumber"
+                                                class="form-control" placeholder="mobile" pattern="[0-9]{1,10}" inputmode="numeric"
+                                                maxlength="10" required>
+                                        </div>
+                
+                                        <div class="input-form mt-3">
+                                            <label for="validation-form-2" class="form-label w-full flex flex-col sm:flex-row"> Logo
+                                                <span class="sm:ml-auto  sm:mt-0 text-xs text-slate-500">Size limit 500KB & Dimension
+                                                    40x40 px</span> </label>
+                                            <input id="logo" type="file" name="logo" accept="image/png, image/jpg, image/jpeg"
+                                                class="form-control mb-3" placeholder="device limit" required>
+                
+                
+                                        </div>
+                
+                                    </form>
+                
+                                </div>
+                                <!-- END: Modal Body -->
+                                <!-- BEGIN: Modal Footer -->
+                                <div class="modal-footer">
+                                    <button value="Reset" class="btn btn-primary" onclick="resetFormTenant()" style="background:red;width:80px;">Reset</button>
+                                    <button class="btn btn-primary" id="submit-btn-tenant"
+                                        onclick="submitFormTenant('POST','http://104.237.9.127:5001/admin/add-tenant/')"
+                                        value="submit" style="background:green;width:80px;">Register</button>
+                
+                                </div>
+                                <!-- END: Modal Footer -->
+                            </div>
+                        </div>
+                    </div>
+                
+                <!--Add tenant modal end-->
+                
+                    <div class="modal-content">
+                        <div id="success-register" class="modal" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-body p-0">
+                                        <div class="p-5 text-center"> <i data-lucide="check-circle"
+                                                class="w-16 h-16 text-success mx-auto mt-3"></i>
+                                            <div class="text-3xl mt-5" id="success-modal-text">Registered Successfully!</div>
+                
+                                        </div>
+                                        <div class="px-5 pb-8 text-center"> <button type="button" data-tw-dismiss="modal"
+                                                class="btn btn-primary w-24">Ok</button> </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div id="warning-modal-preview" class="modal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-body p-0">
+                                    <div class="p-5 text-center"> <i data-lucide="x-circle"
+                                            class="w-16 h-16 text-warning mx-auto mt-3"></i>
+                                        <div class="text-slate-500 mt-2" id="warning-msg">Something went wrong!</div>
+                                    </div>
+                
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                                
+                <div class="tab-content__pane w-full flex flex-col justify-center" id="deviceTable">
+                    <div class="actions flex justify-end mb-4 gap-4">
+                        <h2 class="text-lg font-medium mr-auto">
+                            Device Table
+                        </h2>
+                        <div class="text-center">
+                            <a href="javascript:;" data-toggle="modal" data-target="#registerDevice" class="button inline-block bg-theme-1 text-white">Register Device</a>
+                        </div>
+                        <div class="modal" id="registerDevice">
+                            <div class="modal__content">
+                                <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200">
+                                    <h2 class="font-medium text-base mr-auto">Register Machine</h2>
+                                </div>
+                                <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div class="col-span-1"> 
+                                        <label>Device ID</label> 
+                                        <input type="text" class="input w-full border mt-2" placeholder="ID of Device"> 
+                                    </div>
+                                    <div class="col-span-1"> 
+                                        <label>Device Name</label> 
+                                        <input type="text" class="input w-full border mt-2" placeholder="Name of the Device"> 
+                                    </div>
+                                    <div class="col-span-1"> 
+                                        <label>Latitude</label> 
+                                        <input type="text" class="input w-full border mt-2" placeholder="Latitude"> 
+                                    </div>
+                                    <div class="col-span-1"> 
+                                        <label>Longitude</label> 
+                                        <input type="text" class="input w-full border mt-2" placeholder="Longitude"> 
+                                    </div>
+                                    <div class="col-span-1"> 
+                                        <label>Device Master</label> 
+                                        <select data-hide-search="true" class="select2 w-full border mt-2">
+                                            <option>Carding</option>
+                                            <option>Breaker</option>
+                                            <option>Unilap</option>
+                                        </select> 
+                                    </div>
+                                    <div class="col-span-1"> 
+                                        <label>Description</label> 
+                                        <input type="text" class="input w-full border mt-2" placeholder="Description"> 
+                                    </div>
+                                </div>
+                                <div class="px-5 py-3 text-right border-t border-gray-200"> 
+                                    <button type="button" class="button w-20 border text-gray-700 mr-1" data-dismiss="modal">Cancel</button> 
+                                    <button type="button" class="button w-20 bg-theme-1 text-white">Register</button> 
+                                </div>
+                            </div>
+                        </div>                        
+                    </div>
+                    <div class="intro-y box w-full">
+                        <div class="intro-y datatable-wrapper box p-3 ">
+                            <table class="table table-report table-report--bordered display w-full">
+                                <thead>
+                                    <tr>
+                                        <th class="border-b-2">
+                                            <input class="input flex-none border border-gray-500" type="checkbox" onclick="toggleSelectAll(this)">
+                                        </th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">DEVICE ID</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">DEVICE NAME</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">DEVICE TYPE</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">TENANT NAME</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">USERNAME</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">ASSIGN</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">ACTION</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">VALIDITY</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">STATUS</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">LAST PING</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">RSSI</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">BATTERY/POWER</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">DESCRIPTION</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="border-b w-20">
+                                            <input class="input select-row flex-none border border-gray-500" type="checkbox" >
+                                        </td>
+                                        <td class="border-b">
+                                            <div class="font-medium whitespace-no-wrap text-center">D102</div>
+                                        </td>
+                                        <td class="border-b">
+                                            <div class="font-medium whitespace-no-wrap text-center">D101 01</div>
+                                        </td>
+                                        <td class="border-b">
+                                            <div class="flex items-center sm:justify-center">Carding Output</div>
+                                        </td>
+                                        <td class="border-b">
+                                            <div class="font-medium whitespace-no-wrap text-center">Rimtex</div>
+                                        </td>
+                                        <td class="border-b">
+                                            <div class="font-medium whitespace-no-wrap text-center">Customer1</div>
+                                        </td>
+                                        <td class="border-b">
+                                            <div class="flex items-center sm:justify-center"><i data-feather="user" class="w-4 h-4 mr-1"></i></div>
+                                        </td>
+                                        <td class="border-b w-5">
+                                            <div class="flex sm:justify-center items-center">
+                                                <a class="flex items-center mr-3" href="#"> 
+                                                    <i data-feather="check-square" class="w-4 h-4 mr-1"></i> Edit 
+                                                </a>
+                                                <form action="#" method="post" style="display:inline;" onsubmit="confirmDelete(event)">
+                                                    <button type="submit" class="flex items-center text-theme-6"> 
+                                                        <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete 
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>          
+                                        <td class="border-b">
+                                            <div class="flex items-center sm:justify-center">Offline</div>
+                                        </td>
+                                        <td class="border-b">
+                                            <div class="flex items-center sm:justify-center">Offline</div>
+                                        </td>
+                                        <td class="border-b">
+                                            <div class="flex items-center sm:justify-center">Offline</div>
+                                        </td>
+                                        <td class="border-b">
+                                            <div class="flex items-center sm:justify-center">Offline</div>
+                                        </td>
+                                        <td class="border-b">
+                                            <div class="flex items-center sm:justify-center">Offline</div>
+                                        </td>
+                                        <td class="border-b">
+                                            <div class="flex items-center sm:justify-center">Offline</div>
+                                        </td>             
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="flex justify-center gap-2 p-2">
+                            <button type="button" class="button bg-theme-1 text-white" onclick="activateSelected()">Activate</button>
+                            <button type="button" class="button bg-theme-6 text-white" onclick="deactivateSelected()">Deactivate</button>
+                        </div>
+                    </div>
+                    
+                    <script>
+                        function toggleSelectAll(selectAllCheckbox) {
+                            const checkboxes = document.querySelectorAll('.select-row');
+                            checkboxes.forEach(checkbox => {
+                                checkbox.checked = selectAllCheckbox.checked;
+                            });
+                        }
+                    </script>
+                    
+                </div>
+                
+                <div class="tab-content__pane w-full flex flex-col justify-center" id="deviceMaster">
+                    <div class="actions flex justify-end mb-4 gap-4">
+                        <h2 class="text-lg font-medium mr-auto">
+                            Device Master
+                        </h2>
+                        <div class="text-center">
+                            <a href="javascript:;" data-toggle="modal" data-target="#addDevice" class="button inline-block bg-theme-1 text-white">Add Device</a>
+                        </div>
+                        <div class="modal" id="addDevice">
+                            <div class="modal__content">
+                                <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200">
+                                    <h2 class="font-medium text-base mr-auto">Add Devices</h2>
+                                </div>
+                                <div class="p-5 grid grid-cols-1 sm:grid-cols-1 gap-4">
+                                    <div class="col-span-1"> 
+                                        <label>Device ID</label> 
+                                        <input type="text" class="input w-full border mt-2" placeholder="ID of Device"> 
+                                    </div>
+                                    <div class="col-span-1"> 
+                                        <label>Device Name</label> 
+                                        <input type="text" class="input w-full border mt-2" placeholder="Name of the Device"> 
+                                    </div>
+                                    <div class="px-5 py-3 text-right border-t border-gray-200"> 
+                                        <button type="button" class="button w-20 border text-gray-700 mr-1" data-dismiss="modal">Cancel</button> 
+                                        <button type="button" class="button w-20 bg-theme-1 text-white">Add</button> 
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="intro-y box w-6/12 mx-auto">
+                        <div class="intro-y datatable-wrapper box p-5">
+                            <table class="table table-report table-report--bordered display mx-auto">
+                                <thead>
+                                    <tr>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">NAME</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">DESCRIPTION</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="border-b">
+                                            <div class="font-medium whitespace-no-wrap text-center">D101</div>
+                                        </td>                       
+                                        <td class="border-b">
+                                            <div class="font-medium whitespace-no-wrap text-center">D101</div>
+                                        </td>                       
+                                    </tr>    
+                                    <tr>
+                                        <td class="border-b">
+                                            <div class="font-medium whitespace-no-wrap text-center">D101</div>
+                                        </td>                       
+                                        <td class="border-b">
+                                            <div class="font-medium whitespace-no-wrap text-center">D101</div>
+                                        </td>                       
+                                    </tr>    
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+
+                <div class="tab-content__pane w-full flex flex-col justify-center" id="tenants">
+                    <div class="actions flex justify-end mb-4 gap-4">
+                        <h2 class="text-lg font-medium mr-auto">
+                            Mills
+                        </h2>
+                        <div class="text-center">
+                            <a href="javascript:;" data-toggle="modal" data-target="#addTenants" class="button inline-block bg-theme-1 text-white">Add Mill</a>
+                        </div>
+                        <div class="modal" id="addTenants">
+                            <div class="modal__content">
+                                <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200">
+                                    <h2 class="font-medium text-base mr-auto">Add Mill</h2>
+                                </div>
+                                <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div class="col-span-2"> 
+                                        <label>Tenant Label</label> 
+                                        <input type="text" class="input w-full border mt-2" placeholder="Tenent Lable"> 
+                                    </div>
+                                    <div class="col-span-1"> 
+                                        <label>Username</label> 
+                                        <input type="text" class="input w-full border mt-2" placeholder="Username"> 
+                                    </div>
+                                    <div class="col-span-1"> 
+                                        <label>Password</label> 
+                                        <input type="password" class="input w-full border mt-2" placeholder="Password"> 
+                                    </div>
+                                    <div class="col-span-1"> 
+                                        <label>E-mail</label> 
+                                        <input type="text" class="input w-full border mt-2" placeholder="E-mail"> 
+                                    </div>
+                                    <div class="col-span-1"> 
+                                        <label>Phone Number</label> 
+                                        <input type="text" class="input w-full border mt-2" placeholder="Phone Number"> 
+                                    </div>
+                                    <div class="col-span-2"> 
+                                        <label>Device Master</label> 
+                                        <input type="file" class="input w-full border mt-2">
+                                    </div>
+                                </div>
+                                <div class="px-5 py-3 text-right border-t border-gray-200"> 
+                                    <button type="button" class="button w-20 border text-gray-700 mr-1" data-dismiss="modal">Cancel</button> 
+                                    <button type="button" class="button w-20 bg-theme-1 text-white">Register</button> 
+                                </div>
+                            </div>
+                        </div>                        
+                    </div>
+                    <div class="intro-y box w-full">
+                        <div class="intro-y datatable-wrapper box p-5">
+                            <table class="table table-report table-report--bordered display w-full">
+                                <thead>
+                                    <tr>
+                                        <th class="border-b-2 whitespace-no-wrap">MILLTENENT LABEL</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">MILL NAME</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">CREATED DATE</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">ALLOCATED DEVICES</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">ACTIVE DEVICES</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">INACTIVE DEVICES</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">OFFLINE DEVICES</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">ACTIONS</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">EMAIL</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">PHONE NUMBER</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="border-b">
+                                            <div class="font-medium whitespace-no-wrap">Mill1</div>
+                                        </td>
+                                        <td class="border-b">
+                                            <div class="font-medium whitespace-no-wrap text-center">t1</div>
+                                        </td>
+                                        <td class="border-b">
+                                            <div class="font-medium whitespace-no-wrap text-center">05/08/2024</div>
+                                        </td>
+                                        <td class="border-b">
+                                            <div class="font-medium whitespace-no-wrap text-center">3</div>
+                                        </td>
+                                        <td class="border-b">
+                                            <div class="flex items-center sm:justify-center">
+                                                3
+                                            </div>
+                                        </td>
+                                        <td class="border-b">
+                                            <div class="flex items-center sm:justify-center">
+                                                3
+                                            </div>
+                                        </td>
+                                        <td class="border-b">
+                                            <div class="flex items-center sm:justify-center">
+                                                0
+                                            </div>
+                                        </td>
+                                        <td class="border-b w-5">
+                                            <div class="flex sm:justify-center items-center">
+                                                <a class="flex items-center mr-3" href="#"> 
+                                                    <i data-feather="check-square" class="w-4 h-4 mr-1"></i> Edit 
+                                                </a>
+                                                <form action="#" method="post" style="display:inline;" onsubmit="confirmDelete(event)">
+                                                    <button type="submit" class="flex items-center text-theme-6"> 
+                                                        <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete 
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>     
+                                        <td class="border-b">
+                                            <div class="font-medium whitespace-no-wrap text-center">t1@gmail.com</div>
+                                        </td>
+                                        <td class="border-b">
+                                            <div class="font-medium whitespace-no-wrap text-center">9090909090</div>
+                                        </td>         
+                                    </tr>    
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content__pane w-full flex justify-center" id="logs">
+                    <div class="intro-y box w-7/12">
+                        <div class="intro-y datatable-wrapper box p-5">
+                            <table class="table table-report table-report--bordered display">
+                                <thead>
+                                    <tr>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">DEVICE ID</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">DEVICE NAME</th>
+                                        <th class="border-b-2 whitespace-no-wrap">DATA</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="border-b">
+                                            <div class="font-medium whitespace-no-wrap text-center">D101</div>
+                                        </td>                       
+                                        <td class="border-b">
+                                            <div class="font-medium whitespace-no-wrap text-center">D101</div>
+                                        </td>                       
+                                        <td class="border-b">
+                                            <div class="font-medium whitespace-no-wrap text-center">
+                                                <button type="submit" class="flex justify-center items-center"> 
+                                                    <i data-feather="eye" class="w-4 h-4 mr-1"></i> 
+                                                </button>
+                                            </div>
+                                        </td>                       
+                                    </tr>    
+                                    <tr>
+                                        <td class="border-b">
+                                            <div class="font-medium whitespace-no-wrap text-center">D101</div>
+                                        </td>                       
+                                        <td class="border-b">
+                                            <div class="font-medium whitespace-no-wrap text-center">D101</div>
+                                        </td>                       
+                                        <td class="border-b">
+                                            <button type="submit" class="flex justify-center items-center"> 
+                                                <i data-feather="eye" class="w-4 h-4 mr-1"></i> 
+                                            </button>
+                                        </td>                       
+                                    </tr>    
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content__pane w-full flex flex-col justify-center" id="firmware">
+                    <div class="actions flex justify-end mb-4 gap-4">
+                        <h2 class="text-lg font-medium mr-auto">
+                            Device Updates
+                        </h2>
+                        <div class="text-center flex gap-4">
+                            <a href="javascript:;" data-toggle="modal" data-target="#firmwareUpload" class="button inline-block bg-theme-1 text-white">Firmware Upload</a>
+                            <a href="javascript:;" data-toggle="modal" data-target="#configUpload" class="button inline-block bg-theme-1 text-white">Configuration Upload</a>
+                        </div>
+                        <div class="modal" id="firmwareUpload">
+                            <div class="modal__content">
+                                <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200">
+                                    <h2 class="font-medium text-base mr-auto">Firmware</h2>
+                                </div>
+                                <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div class="col-span-2"> 
+                                        <label>Firmware Upload</label> 
+                                        <input type="file" class="input w-full border mt-2"> 
+                                    </div>
+                                    
+                                    <div class="col-span-2"> 
+                                        <label>Firmware Description</label> 
+                                        <input type="textarea" class="input w-full border mt-2" placeholder="Description"> 
+                                    </div>
+                                </div>
+                                <div class="px-5 py-3 text-right border-t border-gray-200"> 
+                                     
+                                    <button type="button" class="button w-20 bg-theme-1 text-white">Upload</button> 
+                                </div>
+                            </div>
+                        </div>                        
+                        <div class="modal" id="configUpload">
+                            <div class="modal__content">
+                                <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200">
+                                    <h2 class="font-medium text-base mr-auto">Configuration</h2>
+                                </div>
+                                <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div class="col-span-2"> 
+                                        <label>Configuration Upload</label> 
+                                        <input type="file" class="input w-full border mt-2"> 
+                                    </div>
+                                    
+                                    <div class="col-span-2"> 
+                                        <label>Configuration Description</label> 
+                                        <input type="textarea" class="input w-full border mt-2" placeholder="Description"> 
+                                    </div>
+                                </div>
+                                <div class="px-5 py-3 text-right border-t border-gray-200"> 
+                                     
+                                    <button type="button" class="button w-20 bg-theme-1 text-white">Upload</button> 
+                                </div>
+                            </div>
+                        </div>                        
+                    </div>
+                    <div class="intro-y box w-full">
+                        <div class="intro-y datatable-wrapper box p-5">
+                            <table class="table table-report table-report--bordered display w-full">
+                                <thead>
+                                    <tr>
+                                        <th class="border-b-2 text-right whitespace-no-wrap">DEVICE ID</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">DEVICE NAME</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">DEVICE TYPE</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">TENENT NAME</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">LAST UPDATED</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">FIRMWARE</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">CONFIGURATION</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="border-b">
+                                            <div class="font-medium whitespace-no-wrap text-center">D101</div>
+                                        </td>
+                                        <td class="border-b">
+                                            <div class="font-medium whitespace-no-wrap text-center">D101 01</div>
+                                        </td>
+                                        <td class="border-b">
+                                            <div class="whitespace-no-wrap text-center">Carding</div>
+                                        </td>
+                                        <td class="border-b">
+                                            <div class="font-medium whitespace-no-wrap text-center">Rimtex</div>
+                                        </td>
+                                        <td class="border-b">
+                                            <div class="font-medium whitespace-no-wrap text-center">Customer1</div>
+                                        </td>
+                                        
+                                        <td class="border-b w-5">
+                                            <div class="flex sm:justify-center items-center">
+                                                <a class="flex items-center mr-3" href="#"> 
+                                                    <i data-feather="plus" class="w-4 h-4 mr-1"></i> Firmware
+                                                </a>
+                                            </div>
+                                        </td>
+                                        <td class="border-b w-5">
+                                            <div class="flex sm:justify-center items-center">
+                                                <a class="flex items-center mr-3" href="#"> 
+                                                    <i data-feather="plus" class="w-4 h-4 mr-1"></i> Configuration
+                                                </a>
+                                            </div>
+                                        </td>
+                                                       
+                                    </tr>    
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content__pane w-full flex justify-center" id="configuration">
+                    <div class="intro-y box w-full">
+                        <div class="intro-y datatable-wrapper box p-5">
+                            <table class="table table-report table-report--bordered display w-full">
+                                <thead>
+                                    <tr>
+                                        <th class="border-b-2 whitespace-no-wrap">SI NO</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">DEVICE ID</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">DEVICE NAME</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">DEVICE TYPE</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">TENENT NAME</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">USERNAME</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">VALIDITY</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">STATUS</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">LAST PING</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">RSSI</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">BATTERY/POWER</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">DESCRIPTION</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">LAST UPDATED</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">CONFIGURATION</th>
+                                        <th class="border-b-2 text-center whitespace-no-wrap">VERSION</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="border-b">
+                                            <div class="font-medium whitespace-no-wrap">1</div>
+                                        </td>
+                                        <td class="border-b">
+                                            <div class="font-medium whitespace-no-wrap text-center">D101</div>
+                                        </td>
+                                        <td class="border-b">
+                                            <div class="font-medium whitespace-no-wrap text-center">D101 01</div>
+                                        </td>
+                                        <td class="border-b">
+                                            <div class="font-medium whitespace-no-wrap text-center">Rimtex</div>
+                                        </td>
+                                        <td class="border-b">
+                                            <div class="font-medium whitespace-no-wrap text-center">Customer1</div>
+                                        </td>
+                                        <td class="w-40 border-b">
+                                            <div class="flex items-center sm:justify-center">
+                                                Active
+                                            </div>
+                                        </td>
+                                        <td class="w-40 border-b">
+                                            <div class="flex items-center sm:justify-center">
+                                                Offline
+                                            </div>
+                                        </td>
+                                        <td class="w-40 border-b">
+                                            <div class="flex items-center sm:justify-center">
+                                                Offline
+                                            </div>
+                                        </td>
+                                        <td class="w-40 border-b">
+                                            <div class="flex items-center sm:justify-center">
+                                                Offline
+                                            </div>
+                                        </td>
+                                        <td class="w-40 border-b">
+                                            <div class="flex items-center sm:justify-center">
+                                                Offline
+                                            </div>
+                                        </td>
+                                        <td class="w-40 border-b">
+                                            <div class="flex items-center sm:justify-center">
+                                                Offline
+                                            </div>
+                                        </td>
+                                        <td class="w-40 border-b">
+                                            <div class="flex items-center sm:justify-center">
+                                                Offline
+                                            </div>
+                                        </td>
+                                        <td class="w-40 border-b">
+                                            <div class="flex items-center sm:justify-center">
+                                                Offline
+                                            </div>
+                                        </td>
+                                        <td class="border-b w-5">
+                                            <div class="flex sm:justify-center items-center">
+                                                <a class="flex items-center mr-3" href="#"> 
+                                                    <i data-feather="plus" class="w-4 h-4 mr-1"></i> 
+                                                </a>
+                                            </div>
+                                        </td>
+                                        <td class="w-40 border-b">
+                                            <div class="flex items-center sm:justify-center">
+                                                Offline
+                                            </div>
+                                        </td>                    
+                                    </tr>    
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+

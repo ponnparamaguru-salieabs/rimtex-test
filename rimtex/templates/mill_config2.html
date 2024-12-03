@@ -1,0 +1,93 @@
+{% extends 'topbar.html' %}
+{% load static %}
+{% block head %}
+    <title>Add New Machine</title>
+{% endblock %}
+
+{% block content %}
+    {% include 'user_navbar.html' %}
+    <!-- BEGIN: Content -->
+    <div class="content p-4 bg-gray-200">
+        <div class="intro-y flex items-center">
+            <div class="w-full max-w-8xl mx-auto">
+                <ul class="flex bg-gray-300 gap-1 rounded-md"
+                    role="tablist" aria-orientation="horizontal">
+                    <li class="flex-1" role="tab" aria-selected="true" tabindex="0">
+                        <a id="tab1Link" class="cursor-pointer block appearance-none border-transparent rounded-md border-0 text-center w-full py-3 px-2 bg-white text-black font-medium"
+                            href="#" onclick="showTab('tab1')">1. Configure Machine Types</a>
+                    </li>
+                    <li class="flex-1" role="tab" aria-selected="false" tabindex="-1">
+                        <a id="tab2Link" class="cursor-pointer block appearance-none border-transparent text-slate-700 rounded-md border-0 text-center w-full py-3 px-2 hover:bg-white"
+                            href="#" onclick="showTab('tab2')">2. Setup Machines</a>
+                    </li>
+                    <li class="flex-1" role="tab" aria-selected="false" tabindex="-1">
+                        <a id="tab3Link" class="cursor-pointer block appearance-none border-transparent text-slate-700 rounded-md border-0 text-center w-full py-3 px-2 hover:bg-white"
+                            href="#" onclick="showTab('tab3')">3. Machine Summary</a>
+                    </li>
+                </ul>
+
+                
+                <div id="tab1" class="tab-content mt-4">
+                    <div class="box p-4">
+                        <table class="table-auto w-8/12 text-center">
+                            <thead>
+                                <tr>
+                                    <th class="px-4 py-2">Sl.No</th>
+                                    <th class="px-4 py-2">Machine Type</th>
+                                    <th class="px-4 py-2">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="machine-list">
+                                <tr class="border border-gray-300 rounded-md text-center">
+                                    <td class="text-left p-5">1</td>
+                                    <td class="border-r">Carding</td>
+                                    <td class="">Add</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="flex justify-end gap-4 mt-4">
+                            <button class="bg-gray-500 text-white py-2 px-4 rounded-md" onclick="cancelChanges()">Cancel</button>
+                            <button class="bg-blue-500 text-white py-2 px-4 rounded-md" onclick="saveChanges()">Save & Continue</button>
+                        </div>
+                    </div>
+                </div>
+                
+
+                <div id="tab2" class="tab-content mt-4 hidden">
+                    <div class="box">
+                        
+                    </div>
+                </div>
+
+                <div id="tab3" class="tab-content mt-4 hidden">
+                   
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- END: Content -->
+
+    <script>
+        function showTab(tabId) {
+            
+            document.querySelectorAll('.tab-content').forEach(function(tab) {
+                tab.classList.add('hidden');
+            });
+
+            document.querySelectorAll('[role="tab"]').forEach(function(tab) {
+                tab.querySelector('a').classList.remove('bg-white', 'text-black', 'font-medium');
+                tab.querySelector('a').classList.add('text-slate-700');
+            });
+
+            document.getElementById(tabId).classList.remove('hidden');
+
+            document.querySelectorAll('[role="tab"]').forEach(function(tab) {
+                tab.setAttribute('aria-selected', 'false');
+            });
+            const selectedTab = document.querySelector(`#${tabId}Link`).parentElement;
+            selectedTab.setAttribute('aria-selected', 'true');
+            selectedTab.querySelector('a').classList.add('bg-white', 'text-black', 'font-medium');
+            selectedTab.querySelector('a').classList.remove('text-slate-700');
+        }
+    </script>
+{% endblock %}

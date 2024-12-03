@@ -1,0 +1,66 @@
+{% extends 'topbar.html' %}
+{% load static %}
+{% load form_filters %}
+
+{% block head %}
+    <title>Edit User</title>
+{% endblock %}
+
+{% block content %}
+    {% include 'admin_navbar.html' %}
+    <div class="content w-full">
+        <div class="flex justify-center w-full mt-6">
+            <div class="intro-y w-full max-w-2xl">
+                <div class="intro-y box w-full">
+                    <form method="post" action="{% url 'userEdit' user.id %}" class="validate-form">
+                        {% csrf_token %}
+                        <div class="flex flex-col sm:flex-row items-center p-5 border-b border-gray-200">
+                            <h2 class="font-medium text-base mr-auto">Edit User Details</h2>
+                        </div>
+                        <div class="p-5">
+                            <div class="mb-4">
+                                <label class="flex flex-col sm:flex-row" for="username"> 
+                                    Username 
+                                    <span class="sm:ml-auto mt-1 sm:mt-0 text-xs text-gray-600">Required, at least 2 characters</span>
+                                </label>
+                                <input type="text" name="username" id="username" class="input w-full border mt-2" value="{{ user.username }}" minlength="2" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="flex flex-col sm:flex-row" for="email"> 
+                                    Email 
+                                    <span class="sm:ml-auto mt-1 sm:mt-0 text-xs text-gray-600">Required, email address format</span>
+                                </label>
+                                <input type="email" name="email" id="email" class="input w-full border mt-2" value="{{ user.email }}" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="flex flex-col sm:flex-row" for="phone"> 
+                                    Phone 
+                                    <span class="sm:ml-auto mt-1 sm:mt-0 text-xs text-gray-600">Required, phone number format</span>
+                                </label>
+                                <input type="tel" name="phone" id="phone" class="input w-full border mt-2" value="{{ user.userprofile.phone }}" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="flex flex-col sm:flex-row"> 
+                                    Password 
+                                    <span class="sm:ml-auto mt-1 sm:mt-0 text-xs text-gray-600">Leave blank to keep current password</span>
+                                </label>
+                                <input type="password" name="password" class="input w-full border mt-2" placeholder="New Password (optional)">
+                            </div>
+                            <div class="mb-4">
+                                <label class="flex flex-col sm:flex-row"> 
+                                    Confirm Password 
+                                    <span class="sm:ml-auto mt-1 sm:mt-0 text-xs text-gray-600">Leave blank to keep current password</span>
+                                </label>
+                                <input type="password" name="confirm_password" class="input w-full border mt-2" placeholder="Confirm New Password (optional)">
+                            </div>
+                            <div class="flex justify-end gap-3 mt-8">
+                                <button type="submit" class="button bg-theme-1 text-white py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out hover:bg-theme-20">Update User</button>
+                                <a href="{% url 'userList' %}" class="button bg-gray-200 text-gray-600 py-2 px-4 rounded-lg shadow-md hover:bg-gray-300 transition duration-150 ease-in-out">Cancel</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

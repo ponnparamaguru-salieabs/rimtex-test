@@ -1,0 +1,211 @@
+{% extends 'topbar.html' %}
+{% load static %}
+{% block head %}
+    <title>Edit User</title>
+{% endblock %}
+
+{% block content %}
+    {% include 'admin_navbar.html' %}
+    <div class="content">
+        <div class="intro-y flex items-center mt-8">
+            <h2 class="text-lg font-medium mr-auto">
+                Edit User
+            </h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
+            <!-- User Details Section (Left) -->    
+            <div class="intro-y">
+                <div class="intro-y box">
+                    <form method="post" action="{% url 'userEdit' user.pk %}" class="validate-form">
+                        {% csrf_token %}
+                        <div class="flex flex-col sm:flex-row items-center p-5 border-b border-gray-200">
+                            <h2 class="font-medium text-base mr-auto">
+                                User Details
+                            </h2>
+                        </div>
+                        <div class="p-5">
+                            <div class="mb-4">
+                                <label class="flex flex-col sm:flex-row" for="username">
+                                    Username
+                                    <span class="sm:ml-auto mt-1 sm:mt-0 text-xs text-gray-600">
+                                        Required, at least 2 characters
+                                    </span>
+                                </label>
+                                <input type="text" name="username" id="username" class="input w-full border mt-2" placeholder="johnny" value="{{ user.username }}" minlength="2" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="flex flex-col sm:flex-row" for="email">
+                                    Email
+                                    <span class="sm:ml-auto mt-1 sm:mt-0 text-xs text-gray-600">
+                                        Required, email address format
+                                    </span>
+                                </label>
+                                <input type="email" name="email" id="email" class="input w-full border mt-2" placeholder="example@gmail.com" value="{{ user.email }}" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="flex flex-col sm:flex-row" for="phone">
+                                    Phone
+                                    <span class="sm:ml-auto mt-1 sm:mt-0 text-xs text-gray-600">
+                                        Required, phone number format
+                                    </span>
+                                </label>
+                                <input type="tel" name="phone" id="phone" class="input w-full border mt-2" placeholder="+91 9876543210" value="{{ profile.phone }}" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="flex flex-col sm:flex-row">
+                                    Password
+                                    <span class="sm:ml-auto mt-1 sm:mt-0 text-xs text-gray-600">
+                                        Leave blank if you don't want to change the password
+                                    </span>
+                                </label>
+                                <input type="password" name="password" class="input w-full border mt-2" placeholder="secret" minlength="6">
+                            </div>
+                            <div class="mb-4">
+                                <label class="flex flex-col sm:flex-row">
+                                    Confirm Password
+                                    <span class="sm:ml-auto mt-1 sm:mt-0 text-xs text-gray-600">
+                                        Leave blank if you don't want to change the password
+                                    </span>
+                                </label>
+                                <input type="password" name="confirm_password" class="input w-full border mt-2" placeholder="secret" minlength="6">
+                            </div>
+                            <div class="mb-4">
+                                <label for="role" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Role
+                                </label>
+                                <select name="role" id="role" data-hide-search="true"
+                                    class="select2 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    <option value="Admin" {% if profile.role == 'Admin' %}selected{% endif %}>Admin</option>
+                                    <option value="Manager" {% if profile.role == 'Manager' %}selected{% endif %}>Manager</option>
+                                    <option value="Supervisor" {% if profile.role == 'Supervisor' %}selected{% endif %}>Supervisor</option>
+                                </select>
+                            </div>
+                        </div>
+                </div>
+            </div>
+
+            <!-- Roles and Permissions Section (Right) -->
+            <div class="intro-y">
+                <div class="intro-y box h-full">
+                    <div class="flex flex-col sm:flex-row items-center p-5 border-b border-gray-200">
+                        <h2 class="font-medium text-base mr-auto">
+                            Permissions
+                        </h2>
+                    </div>
+                    <div class="p-5">
+                        <div class="space-y-4">
+                            <div class="mb-4 border border-gray-300 rounded-lg">
+                                <table class="min-w-full divide-y divide-gray-200 rounded-lg">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Permission</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">View Only</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Edit</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200">
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">Mill Information</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                                <input type="checkbox" name="permissions_mill_config_view" id="view-mill-info" class="input border" {% if profile.permissions.mill_config_view %}checked{% endif %}>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                                <input type="checkbox" name="permissions_mill_config_edit" id="edit-mill-info" class="input border" {% if profile.permissions.mill_config_edit %}checked{% endif %}>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">Setup Machines</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                                <input type="checkbox" name="permissions_setup_machine_view" id="view-setup-machine" class="input border" {% if profile.permissions.setup_machine_view %}checked{% endif %}>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                                <input type="checkbox" name="permissions_setup_machine_edit" id="edit-setup-machine" class="input border" {% if profile.permissions.setup_machine_edit %}checked{% endif %}>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">Machine Summary</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                                <input type="checkbox" name="permissions_machine_summ_view" id="view-machine-summ" class="input border" {% if profile.permissions.machine_summ_view %}checked{% endif %}>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                                <input type="checkbox" name="permissions_machine_summ_edit" id="edit-machine-summ" class="input border" {% if profile.permissions.machine_summ_edit %}checked{% endif %}>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">Shift Settings</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                                <input type="checkbox" name="permissions_set_shift_view" id="view-set-shift" class="input border" {% if profile.permissions.set_shift_view %}checked{% endif %}>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                                <input type="checkbox" name="permissions_set_shift_edit" id="edit-set-shift" class="input border" {% if profile.permissions.set_shift_edit %}checked{% endif %}>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">Mill Layout</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                                <input type="checkbox" name="permissions_mill_layout_view" id="view-mill-layout" class="input border" {% if profile.permissions.mill_layout_view %}checked{% endif %}>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                                <input type="checkbox" name="permissions_mill_layout_edit" id="edit-mill-layout" class="input border" {% if profile.permissions.mill_layout_edit %}checked{% endif %}>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">Line Configuration</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                                <input type="checkbox" name="permissions_line_config_view" id="view-line-config" class="input border" {% if profile.permissions.line_config_view %}checked{% endif %}>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                                <input type="checkbox" name="permissions_line_config_edit" id="edit-line-config" class="input border" {% if profile.permissions.line_config_edit %}checked{% endif %}>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">Red Flagging</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                                <input type="checkbox" name="permissions_red_flag_view" id="view-red-flag" class="input border" {% if profile.permissions.red_flag_view %}checked{% endif %}>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                                <input type="checkbox" name="permissions_red_flag_edit" id="edit-red-flag" class="input border" {% if profile.permissions.red_flag_edit %}checked{% endif %}>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">Can Management</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                                <input type="checkbox" name="permissions_can_manage_view" id="view-can-manage" class="input border" {% if profile.permissions.can_manage_view %}checked{% endif %}>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                                <input type="checkbox" name="permissions_can_manage_edit" id="edit-can-manage" class="input border" {% if profile.permissions.can_manage_edit %}checked{% endif %}>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">Non Scan Settings</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                                <input type="checkbox" name="permissions_non_scan_view" id="view-non-scan" class="input border" {% if profile.permissions.non_scan_view %}checked{% endif %}>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                                <input type="checkbox" name="permissions_non_scan_edit" id="edit-non-scan" class="input border" {% if profile.permissions.non_scan_edit %}checked{% endif %}>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">Reports</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                                <input type="checkbox" name="permissions_reports_view" id="view-reports" class="input border" {% if profile.permissions.reports_view %}checked{% endif %}>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                                <input type="checkbox" name="permissions_reports_edit" id="edit-reports" class="input border" {% if profile.permissions.reports_edit %}checked{% endif %}>
+                                            </td>
+                                        </tr>
+                                    </tbody>                                    
+                                </table>
+                            </div>
+                        </div>
+                        <!-- Form Submission Buttons -->
+                        <div class="flex justify-end gap-4 m-5">
+                            <button type="submit" class="button bg-theme-1 text-white py-2 px-4 rounded-lg shadow-md hover:bg-theme-2 transition duration-150 ease-in-out">Update User</button>
+                            <a href="{% url 'userList' %}" class="button bg-gray-200 text-gray-600 py-2 px-4 rounded-lg shadow-md hover:bg-gray-300 transition duration-150 ease-in-out">Cancel</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

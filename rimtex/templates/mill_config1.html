@@ -1,0 +1,462 @@
+{% extends 'topbar.html' %}
+{% load static %}
+{% block head %}
+    <title>Machine Configuration</title>
+{% endblock %}
+
+{% block content %}
+    {% include 'user_navbar.html' %}
+    <!-- BEGIN: Content -->
+    <div class="content p-4">
+        <div class="intro-y w-full pr-1 flex flex-col justify-center items-center">
+            <div class=" w-8/12 p-1 border border-dashed border-gray-400 rounded-md">
+                <div class="pos__tabs nav-tabs flex"> 
+                    {% if request.user.is_staff %}
+                    <a data-toggle="tab" data-target="#millInfo" href="javascript:;" class="flex-1 py-1 px-1 rounded-md text-sm text-center {% if request.user.is_staff %} active {% endif %}">Mill Information</a> 
+                    {% endif %}
+                    <a data-toggle="tab" data-target="#machineSumm" href="javascript:;" class="flex-1 py-1 px-1 rounded-md text-sm text-center {% if not request.user.is_staff %} active {% endif %}">Machine Summary</a> 
+                    <a data-toggle="tab" data-target="#shiftSet" href="javascript:;" class="flex-1 py-1 px-1 rounded-md text-sm text-center">Shift Settings</a> 
+                </div>
+            </div>
+            <div class="tab-content p-8 mt-2 w-full flex justify-center">
+                {% if request.user.is_staff %}
+                <div class="tab-content__pane {% if request.user.is_staff %} active {% endif %} w-full flex justify-center" id="millInfo">
+                    <div class="intro-y box w-5/12">
+                        <div class="flex flex-col sm:flex-row items-center p-5 border-b border-gray-200">
+                            <h2 class="font-medium text-base mr-auto">
+                                Mill Details
+                            </h2>
+                        </div>
+                        <div class="p-5" id="input">
+                            <div class="preview">
+                                <div>
+                                    <label>Mill Name</label>
+                                    <input type="text" class="input w-full border my-3" placeholder="Mill Name">
+                                </div>
+                                <div>
+                                    <label>Unit Number</label>
+                                    <input type="text" class="input w-full border my-3" placeholder="Mill Unit Number">
+                                </div>
+                                <div>
+                                    <label>Phone</label>
+                                    <input type="tel" class="input w-full border my-3" placeholder="Phone Number">
+                                </div>
+                                <div>
+                                    <label>Email</label>
+                                    <input type="email" class="input w-full border my-3" placeholder="Email Address">
+                                </div>
+                                <div>
+                                    <label for="image" class="block text-sm font-medium text-gray-700 mb-1">Logo</label>
+                                    <div class="p-6 my-3" style="border: 2px dashed #d1d5db; border-radius: 0.375rem;" id="myDropzone">
+                                        <div class="dz-message" data-dz-message>
+                                            <div class="text-lg font-medium">Drop Image here or click to upload.</div>
+                                            <div class="text-gray-600">This is just a demo dropzone. Selected files are <span class="font-medium">not</span> actually uploaded.</div>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="logo" id="logo" value="{{ machine.image }}">
+                                </div>
+                                <div class="flex justify-end gap-4 mt-5"> 
+                                    <a href="{% url 'machineList' %}" class="bg-gray-200 text-gray-600 py-2 px-4 rounded-lg shadow-md hover:bg-gray-300 transition duration-150 ease-in-out">Cancel</a>
+                                    <button type="submit" class="bg-theme-1 text-white py-2 px-4 rounded-lg shadow-md hover:bg-theme-1 transition duration-150 ease-in-out">Save & Continue</button> 
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="tab-content__pane w-full {% if not request.user.is_staff %} active {% endif %}" id="machineSumm">
+                    <div class="actions flex justify-end mb-4 gap-4">
+                        <h2 class="text-lg font-medium mr-auto text-theme-6">
+                            List of Machines
+                        </h2>
+                        <div class="text-center">
+                            <a href="javascript:;" data-toggle="modal" data-target="#addMachineModal" class="button inline-block bg-theme-1 text-white">Add Machine</a>
+                        </div>
+                        <div class="modal" id="addMachineModal">
+                            <div class="modal__content">
+                                <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200">
+                                    <h2 class="font-medium text-base mr-auto">Add Machine</h2>
+                                </div>
+                                <div class="p-5 grid grid-cols-1 gap-4">
+                                    <label for="machine-type" class="whitespace-nowrap">Select Machine Type</label> 
+                                    <div class="col-span-12 sm:col-span-6 flex items-center space-x-2"> 
+                                        <select id="machine-type" data-hide-search="true" class="w-full border mt-2 flex-1 select2">
+                                            <option value="">-- Select a Machine Type --</option>
+                                            <option value="Carding">Carding Machine</option>
+                                            <option value="Breaker">Breaker Machine</option>
+                                            <option value="Unilap">Unilap Machine</option>
+                                            <option value="Comber">Comber Machine</option>
+                                            <option value="Finisher">Finisher Machine</option>
+                                            <option value="Roving">Roving Machine</option>
+                                        </select> 
+                                    </div>                                      
+
+                                     <div class="col-span-12 sm:col-span-6 space-x-2"> 
+                                        <label for="machine-model">Select Machine Model</label> 
+                                        <select id="machine-model" data-hide-search="true" class="w-full border mt-2 flex-1 select2">
+                                            <option value="">-- Select a Machine --</option>
+                                        </select> 
+                                    </div>                                                                                                
+                                    <div class="col-span-12 sm:col-span-6 space-x-2"> 
+                                        <label>Number of Machines</label> 
+                                        <input type="number" class="input w-full border mt-2 flex-1" placeholder="10"> 
+                                    </div>
+                                    <div class="col-span-12 sm:col-span-6 space-x-2"> 
+                                        <label>Number of Machines Starting (optional)</label> 
+                                        <input type="number" class="input w-full border mt-2 flex-1" placeholder="10"> 
+                                    </div>
+                                </div>
+                                <div class="px-5 py-3 text-right border-t border-gray-200"> 
+                                    <button type="button" class="button w-20 border text-gray-700 mr-1" data-dismiss="modal">Cancel</button> 
+                                    <button type="button" class="button w-20 bg-theme-1 text-white">Add</button> 
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="intro-y datatable-wrapper box p-5">
+                        <table class="table table-report table-report--bordered display datatable w-full">
+                            <thead>
+                                <tr>
+                                    <th class="border-b-2 whitespace-no-wrap">SI NO</th>
+                                    <th class="border-b-2 text-center whitespace-no-wrap">TYPE</th>
+                                    <th class="border-b-2 text-center whitespace-no-wrap">MACHINE NO</th>
+                                    <th class="border-b-2 text-center whitespace-no-wrap">IMAGES</th>
+                                    <th class="border-b-2 text-center whitespace-no-wrap">MODEL</th>
+                                    <th class="border-b-2 text-center whitespace-no-wrap">MANUFACTURER</th>
+                                    <th class="border-b-2 text-center whitespace-no-wrap">STATUS</th>
+                                    <th class="border-b-2 text-center whitespace-no-wrap">ACTION</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="border-b">
+                                        <div class="font-medium whitespace-no-wrap">1</div>
+                                    </td>
+                                    <td class="border-b">
+                                        <div class="font-medium whitespace-no-wrap text-center">Carding</div>
+                                    </td>
+                                    <td class="border-b">
+                                        <div class="font-medium whitespace-no-wrap text-center">Carding 01</div>
+                                    </td>
+                                    <td class="text-center border-b">
+                                        <div class="flex sm:justify-center">
+                                            <div class="intro-x w-10 h-10 image-fit">
+                                                <img alt="Machine Image" class="rounded-sm" src="{% static 'images/preview-16.jpg' %}">
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center border-b">SN_PC</td>
+                                    <td class="text-center border-b">SN-PC</td>
+                                    <td class="w-40 border-b">
+                                        <div class="flex items-center sm:justify-center">
+                                            <i data-feather="check-square" class="w-4 h-4 mr-2"></i> 
+                                            Active
+                                        </div>
+                                    </td>
+                                    <td class="border-b w-5">
+                                        <div class="flex sm:justify-center items-center">
+                                            <a class="flex items-center mr-3" href="#"> 
+                                                <i data-feather="check-square" class="w-4 h-4 mr-1"></i> Edit 
+                                            </a>
+                                            <form action="#" method="post" style="display:inline;" onsubmit="confirmDelete(event)">
+                                                <button type="submit" class="flex items-center text-theme-6"> 
+                                                    <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete 
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>                        
+                                </tr>    
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="tab-content__pane w-full" id="shiftSet">
+                    <div class="actions flex justify-end mb-4 gap-4">
+                        <h2 class="text-lg font-medium mr-auto text-theme-6">
+                            List of Shifts
+                        </h2>
+                        <div class="text-center">
+                            <a href="javascript:;" data-toggle="modal" data-target="#addShiftModal" class="button inline-block bg-theme-1 text-white">Add Shift</a>
+                        </div>
+                        <div class="modal" id="addShiftModal">
+                            <div class="modal__content">
+                                <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200">
+                                    <h2 class="font-medium text-base mr-auto">Add Shift</h2>
+                                </div>
+                                <div class="p-5 grid grid-cols-1 gap-4">
+                                    <div class="col-span-12 sm:col-span-6"> 
+                                        <label>Shift Name</label> 
+                                        <input type="text" class="input w-full border mt-2 flex-1" placeholder="Shift Name"> 
+                                    </div>
+                                    <div class="col-span-12 sm:col-span-6"> 
+                                        <label>Shift Number</label> 
+                                        <input type="text" class="input w-full border mt-2 flex-1" placeholder="Shift Number"> 
+                                    </div>
+                                    <div class="col-span-12 sm:col-span-6"> 
+                                        <label>Shift Start Time</label> 
+                                        <input class="datepicker input w-full border mt-2 flex-1" placeholder="Start Time"> 
+                                    </div>
+                                    <div class="col-span-12 sm:col-span-6"> 
+                                        <label>Shift End Time</label> 
+                                        <input class="datepicker input w-full border mt-2 flex-1" placeholder="End Time"> 
+                                    </div>
+                                </div>
+                                <div class="px-5 py-3 text-right border-t border-gray-200"> 
+                                    <button type="button" class="button w-20 border text-gray-700 mr-1" data-dismiss="modal">Cancel</button> 
+                                    <button type="button" class="button w-20 bg-theme-1 text-white">Add</button> 
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="intro-y datatable-wrapper box p-5">
+                        <table class="table table-report table-report--bordered display datatable w-full">
+                            <thead>
+                                <tr>
+                                    <th class="border-b-2 whitespace-no-wrap">SI NO</th>
+                                    <th class="border-b-2 text-center whitespace-no-wrap">SHIFT NAME</th>
+                                    <th class="border-b-2 text-center whitespace-no-wrap">SHIFT START TIME</th>
+                                    <th class="border-b-2 text-center whitespace-no-wrap">SHIFT END TIME</th>
+                                    <th class="border-b-2 text-center whitespace-no-wrap">ACTION</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="border-b">
+                                        <div class="font-medium whitespace-no-wrap">1</div>
+                                    </td>
+                                    <td class="border-b">
+                                        <div class="font-medium whitespace-no-wrap text-center">Line 1</div>
+                                    </td>
+                                    <td class="border-b">
+                                        <div class="font-medium whitespace-no-wrap text-center">30/10/2024</div>
+                                    </td>
+                                    <td class="border-b">
+                                        <div class="font-medium whitespace-no-wrap text-center">30/10/2024</div>
+                                    </td>
+                                    <td class="border-b w-5">
+                                        <div class="flex sm:justify-center items-center">
+                                            <a class="flex items-center mr-3" href="#"> 
+                                                <i data-feather="check-square" class="w-4 h-4 mr-1"></i> Edit 
+                                            </a>
+                                            <form action="#" method="post" style="display:inline;" onsubmit="confirmDelete(event)">
+                                                <button type="submit" class="flex items-center text-theme-6"> 
+                                                    <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete 
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>                        
+                                </tr>    
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const machineSelect = document.getElementById('machine-type');
+            const modelSelect = document.getElementById('machine-model');
+    
+            // Event listener for machine type select
+            machineSelect.addEventListener('change', function() {
+                fetchMachineModels(machineSelect.value);
+            });
+    
+            function fetchMachineModels(selectedType) {
+                modelSelect.innerHTML = '<option value="">-- Select a Machine --</option>'; // Reset models
+    
+                if (!selectedType) return;
+    
+                fetch(`/api/machine-models/?type=${selectedType}`)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        return response.json();
+                    })
+                    .then(data => {
+                        data.forEach(machine => {
+                            const option = document.createElement('option');
+                            option.value = machine.code;
+                            option.textContent = machine.model;
+                            modelSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('There was a problem with the fetch operation:', error));
+            }
+        });
+    </script>
+    
+    <!-- <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const machineSelect = document.getElementById('machine-type');
+            const modelSelect = document.getElementById('machine-model');
+    
+            // Event listener for machine type select
+            machineSelect.addEventListener('change', function() {
+                fetchMachineModels(machineSelect.value);
+            });
+    
+            function fetchMachineModels(selectedType) {
+                modelSelect.innerHTML = '<option value="">-- Select a Machine --</option>'; // Reset models
+    
+                if (!selectedType) return;
+    
+                fetch(`/api/machine-models/?type=${selectedType}`)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        return response.json();
+                    })
+                    .then(data => {
+                        data.forEach(machine => {
+                            const option = document.createElement('option');
+                            option.value = machine.code;
+                            option.textContent = machine.model;
+                            modelSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('There was a problem with the fetch operation:', error));
+            }
+        });
+    </script> -->
+            
+    <!-- <script>
+        document.addEventListener('DOMContentLoaded', function() {
+        const machineSelect = document.getElementById('machine-type');
+        const modelSelect = document.getElementById('machine-model');
+        const filterButton = document.getElementById('filter-button');
+
+        // Mapping of machine types to models
+        const machineTypeToModels = {};
+        {% for machine in machines %}
+            if (!machineTypeToModels["{{ machine.type }}"]) {
+                machineTypeToModels["{{ machine.type }}"] = [];
+            }
+            machineTypeToModels["{{ machine.type }}"].push({
+                code: "{{ machine.code }}",
+                model: "{{ machine.model }}"
+            });
+        {% endfor %}
+
+        // Filter button event listener
+        filterButton.addEventListener('click', function() {
+            updateModelSelect();
+        });
+
+        function updateModelSelect() {
+            modelSelect.innerHTML = '<option value="">-- Select a Machine --</option>';
+            const selectedType = machineSelect.value;
+            if (selectedType && machineTypeToModels[selectedType]) {
+                machineTypeToModels[selectedType].forEach(machine => {
+                    const option = document.createElement('option');
+                    option.value = machine.code;
+                    option.textContent = machine.model;
+                    modelSelect.appendChild(option);
+                });
+            }
+        }
+    });
+    </script> -->
+    <!-- <script>
+       document.addEventListener('DOMContentLoaded', function() {
+    const toggleActions = document.querySelectorAll('.toggle-action');
+    const addedTypes = new Set(); // Track added machine types
+    const machineSelect = document.getElementById('machine-type');
+    const modelSelect = document.getElementById('machine-model');
+    const filterButton = document.getElementById('filter-button');
+
+    // Mapping of machine types to models
+    const machineTypeToModels = {};
+    {% for machine in machines %}
+        if (!machineTypeToModels["{{ machine.type }}"]) {
+            machineTypeToModels["{{ machine.type }}"] = [];
+        }
+        machineTypeToModels["{{ machine.type }}"].push({
+            code: "{{ machine.code }}",
+            model: "{{ machine.model }}"
+        });
+    {% endfor %}
+
+    toggleActions.forEach(action => {
+        action.addEventListener('click', function(event) {
+            event.preventDefault();
+
+            const pattern = this.getAttribute('data-pattern');
+            const isAdding = this.getAttribute('data-action') === 'add';
+
+            if (isAdding) {
+                this.innerHTML = '<i data-feather="check-square" class="w-4 h-4 mr-2"></i> Remove';
+                this.setAttribute('data-action', 'remove');
+                addedTypes.add(pattern); 
+            } else {
+                this.innerHTML = '<i data-feather="plus-square" class="w-4 h-4 mr-2"></i> Add';
+                this.setAttribute('data-action', 'add');
+                addedTypes.delete(pattern); // Remove from the set
+            }
+            feather.replace();
+            updateMachineSelect();
+        });
+    });
+
+    // Filter button event listener
+    filterButton.addEventListener('click', function() {
+        updateModelSelect();
+    });
+
+    function updateModelSelect() {
+        modelSelect.innerHTML = '<option value="">-- Select a Machine --</option>'; // Reset models
+
+        const selectedType = machineSelect.value;
+        if (selectedType && machineTypeToModels[selectedType]) {
+            machineTypeToModels[selectedType].forEach(machine => {
+                const option = document.createElement('option');
+                option.value = machine.code;
+                option.textContent = machine.model;
+                modelSelect.appendChild(option);
+            });
+        }
+    }
+
+    function updateMachineSelect() {
+        machineSelect.innerHTML = '';
+        
+        if (addedTypes.size === 0) {
+            machineSelect.innerHTML = '<option disabled>No machine types added</option>';
+            modelSelect.innerHTML = '';
+            return;
+        }
+
+        addedTypes.forEach(type => {
+            const option = document.createElement('option');
+            option.textContent = type;
+            option.value = type; 
+            machineSelect.appendChild(option);
+        });
+
+        // Automatically update models when a new type is added
+        updateModelSelect();
+    }
+});
+    </script> -->
+
+   <!--  <script>
+        document.getElementById('machine-type').addEventListener('change', function() {
+        const selectedType = this.value;
+        const modelSelect = document.getElementById('machine-model');
+        const options = modelSelect.options;
+
+        // Reset the model select
+        modelSelect.selectedIndex = 0; // Select the first option
+        
+        // Show/hide options based on selected type
+        for (let i = 1; i < options.length; i++) {
+            if (options[i].dataset.type === selectedType || selectedType === "") {
+                options[i].style.display = ''; // Show option
+            } else {
+                options[i].style.display = 'none'; // Hide option
+            }
+        }
+    });
+    </script> -->
+    <!-- END: Content -->
+{% endblock %}
+

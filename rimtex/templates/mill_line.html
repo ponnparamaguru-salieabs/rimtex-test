@@ -1,0 +1,197 @@
+{% extends 'topbar.html' %}
+{% load static %}
+{% load form_filters %}
+{% block head %}
+    <title>Mill Line Configuration</title>
+{% endblock %}
+{% block content %}
+    {% include 'user_navbar.html' %}
+    <div class="content">
+        <div class="intro-y flex flex-col sm:flex-row items-center mt-6">
+            <h2 class="text-lg font-medium mr-auto text-theme-6">
+                Mill Line Datatable
+            </h2>
+            {% if request.user.userprofile.permissions.line_config_edit or request.user.is_staff %} 
+            <div class="w-full sm:w-auto flex mt-4 sm:mt-0">
+                <a href="{% url 'millLineDetails' %}"><button class="button text-white bg-theme-1 shadow-md mr-2">Add New Line</button></a>
+            </div>
+            {% endif %}
+        </div>
+        <div class="intro-y datatable-wrapper box p-5 mt-5">
+            <table class="table table-report table-report--bordered display datatable w-full">
+                <thead>
+                    <tr>
+                        <th class="border-b-2 whitespace-no-wrap">SI.NO</th>
+                        <th class="border-b-2 text-center whitespace-no-wrap">LINE NAME</th>
+                        <th class="border-b-2 text-center whitespace-no-wrap">LINE START AT</th>
+                        <!-- <th class="border-b-2 text-center whitespace-no-wrap">STAGE</th> -->
+                        <th class="border-b-2 text-center whitespace-no-wrap">LINE ENDED AT</th>
+                        {% if request.user.userprofile.permissions.line_config_edit or request.user.is_staff %} 
+                        <th class="border-b-2 text-center whitespace-no-wrap">ACTION</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for line in lines %}
+                    <tr>
+                        <td class="border-b">
+                            <div class="font-medium whitespace-no-wrap">{{ forloop.counter }}</div>
+                        </td>
+                        <td class="text-center border-b">{{ line.name }}</td>
+                        <td class="text-center border-b">{% if line.start_date %} {{ line.start_date }}{% else %} Yet to set {% endif %}</td>
+                        <!-- <td class="text-center border-b">Breaker Running</td> -->
+                        <td class="text-center border-b">{% if line.end_date %} {{ line.end_date }} {% else %} Yet to set {% endif %}</td>
+                        {% if request.user.userprofile.permissions.line_config_edit or request.user.is_staff %} 
+                        <td class="border-b w-5">
+                            <div class="flex sm:justify-center items-center">
+                                <div class="text-center flex gap-4"> 
+                                    {% if line.is_start %}
+                                        <a onclick="stopLine({{ line.id }})" class="text-theme-6 inline-block cursor-pointer">Stop</a> 
+                                        {% else %}
+                                        <a onclick="openModal({{ line.id }})" data-toggle="modal" data-target="#setDateTime" class="text-theme-9 inline-block cursor-pointer">Start</a> 
+                                        <a href="{% url 'editMillLine' line.id %}" class="inline-block cursor-pointer">Edit</a>  
+                                        <a onclick="deleteLine({{ line.id }})" class="text-theme-6 inline-block cursor-pointer">Delete</a>  
+                                    {% endif %}
+                                </div> 
+                            </div>
+                        </td>            
+                        {% endif %}            
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="modal" id="setDateTime"> 
+                <div class="modal__content">
+                    <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200">
+                        <h2 class="font-medium text-base mr-auto">Set Start and End Dates</h2>
+                    </div>
+                    <div class="p-5 grid grid-cols-12 gap-4 row-gap-3">
+                        <div class="col-span-12">
+                            <label>From</label>
+                            <div class="flex gap-2">
+                                <input type="datetime-local" id="start_date" class="input border w-full" required>
+                            </div>
+                        </div>
+                        <div class="col-span-12">
+                            <label>To</label>
+                            <div class="flex gap-2">
+                                <input type="datetime-local" id="end_date" class="input border w-full" required>
+                            </div>
+                        </div>            
+                    </div>
+                    <div class="px-5 py-3 text-right border-t border-gray-200">
+                        <button type="button" class="button w-20 border text-gray-700 bg-gray-300 border-none mr-1" onclick="closeModal()">Cancel</button>
+                        <button type="button" class="button w-20 bg-theme-1 border-none text-white" id="submit-dates" onclick="setDates()">Set</button>
+                    </div>
+                </div>
+            </div> 
+        </div>
+    </div>
+    <script>
+        let currentLineId;
+
+        function openModal(lineId) {
+            console.log("Opening modal for line ID:", lineId);
+            currentLineId = lineId;
+        }
+
+        function setDates() {
+            const startDate = document.getElementById('start_date').value;
+            const endDate = document.getElementById('end_date').value;
+
+            if (startDate && endDate) {
+                fetch('{% url "millLine" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        line_id: currentLineId,
+                        start_date: startDate,
+                        end_date: endDate
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        location.reload(); 
+                    } else {
+                        alert(data.message);
+                    }
+                });
+                closeModal();
+            } else {
+                alert("Please select both start and end dates.");
+            }
+        }
+        function stopLine(lineId) {
+        fetch('{% url "millLine" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                line_id: lineId,
+                stop: true
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                location.reload(); 
+            } else {
+                alert(data.message);
+            }
+        });
+    }
+    function deleteLine(lineId) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "This will also remove associated machines.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch('{% url "millLine" %}', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    line_id: lineId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    Swal.fire(
+                        'Deleted!',
+                        'The line has been deleted.',
+                        'success'
+                    ).then(() => {
+                        location.reload(); 
+                    });
+                } else {
+                    Swal.fire(
+                        'Error!',
+                        data.message,
+                        'error'
+                    );
+                }
+            });
+        }
+    });
+}
+
+        function closeModal() {
+            document.getElementById('setDateTime').style.display = 'none';
+        }
+    </script>
+{% endblock %}
