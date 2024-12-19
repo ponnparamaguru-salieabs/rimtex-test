@@ -57,7 +57,8 @@ urlpatterns = [
     #path('start_mqtt/', views.start_mqtt_connection, name='start_mqtt'),
 
 
-    path('mill-report/', views.millReport, name='millReport'),
+    path('mill-report-ageing/', views.millReportAgeing, name='millReportAgeing'),
+    path('mill-report-machine-stoppage/', views.millReportMachineStop, name='millReportMachineStoppage'),
     path('red-flagging/', views.redFlagging, name='redFlagging'),
     # path('mark_as_red_flag/', views.mark_as_red_flag, name='mark_as_red_flag'),
 

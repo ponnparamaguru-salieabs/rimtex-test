@@ -24,8 +24,8 @@
                         <th class="border-b-2 whitespace-no-wrap">SI.NO</th>
                         <th class="border-b-2 text-center whitespace-no-wrap">LINE NAME</th>
                         <th class="border-b-2 text-center whitespace-no-wrap">LINE START AT</th>
-                        <!-- <th class="border-b-2 text-center whitespace-no-wrap">STAGE</th> -->
                         <th class="border-b-2 text-center whitespace-no-wrap">LINE ENDED AT</th>
+                        <th class="border-b-2 text-center whitespace-no-wrap">STATUS</th> 
                         {% if request.user.userprofile.permissions.line_config_edit or request.user.is_staff %} 
                         <th class="border-b-2 text-center whitespace-no-wrap">ACTION</th>
                         {% endif %}
@@ -35,12 +35,12 @@
                     {% for line in lines %}
                     <tr>
                         <td class="border-b">
-                            <div class="font-medium whitespace-no-wrap">{{ forloop.counter }}</div>
+                            <div class="font-medium whitespace-no-wrap cursor-pointer">{{ forloop.counter }}</div>
                         </td>
-                        <td class="text-center border-b">{{ line.name }}</td>
-                        <td class="text-center border-b">{% if line.start_date %} {{ line.start_date }}{% else %} Yet to set {% endif %}</td>
-                        <!-- <td class="text-center border-b">Breaker Running</td> -->
-                        <td class="text-center border-b">{% if line.end_date %} {{ line.end_date }} {% else %} Yet to set {% endif %}</td>
+                        <td class="text-center border-b cursor-pointer">{{ line.name }}</td>
+                        <td class="text-center border-b cursor-pointer">{% if line.start_date %} {{ line.start_date }}{% else %} Yet to set {% endif %}</td>
+                        <td class="text-center border-b cursor-pointer">{% if line.end_date %} {{ line.end_date }} {% else %} Yet to set {% endif %}</td>
+                        <td class="text-center border-b cursor-pointer"> {% if line.is_start %} <span class="text-theme-9"> Running </span> {% else %} <span class="text-theme-6"> Not Running </span> {% endif %}</td>
                         {% if request.user.userprofile.permissions.line_config_edit or request.user.is_staff %} 
                         <td class="border-b w-5">
                             <div class="flex sm:justify-center items-center">

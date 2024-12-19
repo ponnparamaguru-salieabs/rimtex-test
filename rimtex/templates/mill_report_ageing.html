@@ -1,0 +1,114 @@
+{% extends 'topbar.html' %}
+{% load static %}
+{% load form_filters %}
+{% block head %}
+    <title>Ageing Report</title>
+{% endblock %}
+
+{% block content %}
+    {% include 'user_navbar.html' %}
+    <div class="content p-6">
+        <div class="intro-y w-full pr-1 flex flex-col justify-center items-center">
+            <div class="w-6/12 p-1 border border-dashed border-gray-400 rounded-md">
+                <div class="pos__tabs nav-tabs flex"> 
+                    <a data-toggle="tab" href="{% url 'millReportAgeing'%}" class="flex-1 py-1 px-1 rounded-md text-sm text-center active">Aging Report</a> 
+                    <a data-toggle="tab" href="{% url 'millReportMachineStoppage'%}" class="flex-1 py-1 px-1 rounded-md text-sm text-center">Machine Stopage Report</a> 
+                </div>
+            </div>
+            <div class="tab-content p-8 w-full flex items-center justify-center">
+                <div class="tab-content__pane active w-full flex flex-col justify-center items-center">
+                    <div class="flex justify-between w-full">
+                        <h2 class="text-xl font-medium text-theme-6">
+                            {% if selected_line %}
+                                {{ selected_line.name }}
+                            {% else %}
+                                All Lines
+                            {% endif %}
+                        </h2>
+                        <form method="get" id="line-select-form">
+                            <div> 
+                                <select name="line_id" data-hide-search="true" class="w-full select2">
+                                    <option value="">All Lines</option>
+                                    {% for line in lines %}
+                                        <option value="{{ line.id }}" 
+                                            {% if line.id == selected_line.id %} selected {% endif %}>
+                                            {{ line.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <input type="submit" class="button bg-theme-1 text-white" value="Submit"/>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="intro-y datatable-wrapper box p-5 mt-2">
+                        <table class="table table-report table-report--bordered display datatable w-full">
+                            <thead>
+                                <tr>
+                                    <th class="border-b-2 whitespace-no-wrap">SI NO</th>
+                                    <th class="border-b-2 text-center whitespace-no-wrap">LINE ID</th>
+                                    <th class="border-b-2 text-center whitespace-no-wrap">CAN ID</th>
+                                    <th class="border-b-2 text-center whitespace-no-wrap">CAN ENTRY TIME</th>
+                                    <th class="border-b-2 text-center whitespace-no-wrap">AGEING HRS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for data in ageing %}
+                                <tr>
+                                    <td class="border-b">{{ forloop.counter }}</td>
+                                    {% for line in lines %}
+                                            <td class="text-center border-b">
+                                                {{ line.name }}
+                                            </td>                       
+                                    {% endfor %}
+                                    <td class="text-center border-b">{{ data.can_id }}</td>                       
+                                    <td class="text-center border-b">{{ data.output_time }}</td>                       
+                                    <td class="text-center border-b">{{ data.ageing_hrs }} hrs</td>                      
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <div class="flex justify-center mt-5">    
+                            <a href="javascript:void(0);" class="flex items-center block p-2 transition duration-300 ease-in-out bg-white hover:bg-gray-200 rounded-md export-to-pdf"> 
+                                <i data-feather="file-text" class="w-4 h-4 mr-2"></i> Export to PDF 
+                            </a>
+                            <a href="javascript:void(0);" class="flex items-center block p-2 transition duration-300 ease-in-out bg-white hover:bg-gray-200 rounded-md export-to-excel"> 
+                                <i data-feather="file-text" class="w-4 h-4 mr-2"></i> Export to Excel 
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <script>
+        document.querySelector('.export-to-excel').addEventListener('click', function () {
+            var table = document.querySelector('.datatable');
+            var wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
+            XLSX.writeFile(wb, "ageing_report.xlsx");
+        });
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <script>
+        const img = "{{ millImg.logo.url }}";
+        const title = "{{ millImg.name }}";
+        console.log(title);
+        document.querySelector('.export-to-pdf').addEventListener('click', function () {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const imageUrl = img;
+            if (imageUrl) {
+                doc.addImage(imageUrl, 'JPEG', 10, 10, 10, 10); 
+            }
+            doc.setFontSize(18);
+            doc.text(title, 90, 18, 0, 10);
+            doc.autoTable({
+                html: '.datatable',  
+                startY: 30, 
+                margin: { top: 10 }, 
+            });
+            doc.save('ageing_report_with_image.pdf');
+        });
+    </script>
+{% endblock %}

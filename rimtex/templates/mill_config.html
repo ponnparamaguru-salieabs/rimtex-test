@@ -163,7 +163,6 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function() {
-    // Change machine model based on selected type
     $('#machine-type').change(function() {
         var selectedType = $(this).val();
         $('#machine-model').html('<option value="">-- Select a Machine --</option>'); 
@@ -184,14 +183,12 @@
         });
     });
 
-    // Add machine button functionality
     $('#addMachineButton').click(function() {
         var machineType = $('#machine-type').val();
         var machineModel = $('#machine-model').val();
         var numMachines = $('input[placeholder="10"]').eq(0).val();
         var numStarting = $('input[placeholder="10"]').eq(1).val();
 
-        // Check for duplicates
         $.ajax({
             url: `/api/check-machine-exists/?machine_type=${machineType}&num_machines=${numMachines}&starting_number=${numStarting}`,
             type: 'GET',
@@ -205,8 +202,6 @@
                     });
                     return;
                 }
-
-                // Proceed with adding machine
                 $.ajax({
                     url: `/api/machine-models/?type=${machineType}`, 
                     type: 'GET',
@@ -263,12 +258,9 @@
         });
     });
 
-    // Save edited machine name
     $('#saveEditButton').click(function() {
         var machineId = $('#editMachineModal').data('machine-id');
         var newName = $('#edit-machine-name').val();
-
-        // Check for name existence
         $.ajax({
             url: `/api/check-machine-name/?machine_name=${newName}&exclude_id=${machineId}`,
             type: 'GET',
@@ -282,8 +274,6 @@
                     });
                     return;
                 }
-
-                // Proceed with updating machine name
                 $.ajax({
                     url: `/api/update-machine/${machineId}/`,
                     type: 'POST',
@@ -313,18 +303,14 @@
             }
         });
     });
-
-    // Function to open the edit modal
     window.openEditModal = function(button) {
         var machineId = $(button).data('machine-id');
         var machineName = $(button).data('machine-name');
         
         $('#edit-machine-name').val(machineName);
-        $('#editMachineModal').data('machine-id', machineId); // Store the ID in the modal
-        $('#editMachineModal').modal('show'); // Show the modal
+        $('#editMachineModal').data('machine-id', machineId); 
+        $('#editMachineModal').modal('show');
     };
-
-    // Function to confirm deletion
     window.confirmDelete = function(event, machineId) {
         event.preventDefault(); 
         Swal.fire({
@@ -358,5 +344,4 @@
     };
 });
     </script>  
-    <!-- END: Content -->
 {% endblock %}

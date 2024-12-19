@@ -21,14 +21,14 @@
             {% if request.user.userprofile.permissions.mill_layout_edit or request.user.is_staff %}
             <div class="flex w-full justify-between">
                 <div class="w-full flex gap-2">
-                    <select id="node-select" data-hide-search="true" class="w-3/12 select2">
+                    <select id="node-select" multiple data-hide-search="true" class="w-3/12 select2">
                         <!-- Options will be populated dynamically -->
                     </select>
-                    <button id="add-node-button" class="button w-32 bg-theme-1 text-white">Add Machine</button>
+                    <button id="add-node-button" class="button w-32 bg-theme-1 text-white">Add Machines</button>
                     <button id="save-layout-button" class="button w-32 bg-theme-1 text-white">Save Layout</button>
                 </div>
                 <div>
-                    <p class="text-red-600">*Line configuraton shouldn't done here</p>
+                    <p class="text-red-600">*Line configuration shouldn't be done here</p>
                 </div>
             </div>
             {% endif %}
@@ -47,8 +47,8 @@
             editor.reroute = true;
             editor.zoom_min = 0.3;
             editor.start();
-            editor.on('mouseMove')
-            editor.on('translate')
+            editor.on('mouseMove');
+            editor.on('translate');
             editor.on('addReroute');
             editor.on('removeReroute');
 
@@ -77,58 +77,84 @@
                         console.error("Node select element not found");
                         return;
                     }
-                    select.innerHTML = '<option value="">Select a Machine</option>';
+                    select.innerHTML = '<option value="">Select Machines</option>';
                     machines.forEach(machine => {
                         const option = document.createElement('option');
                         option.value = machine.id;
                         option.textContent = machine.machine_name;
                         select.appendChild(option);
                     });
+                    $(select).select2({
+                        closeOnSelect: false,
+                        placeholder: 'Select Machines and add it'
+                    });
                 });
 
-            function addNode() {
-                const nodeId = document.getElementById('node-select').value;
-                if (!nodeId) {
-                    console.error("No machine selected");
+                function addNodes() {
+    const selectedNodeIds = Array.from(document.getElementById('node-select').selectedOptions)
+                                  .map(option => option.value);
+
+    if (selectedNodeIds.length === 0) {
+        console.error("No machines selected");
+        return;
+    }
+
+    fetch('api/machine/')
+        .then(response => response.json())
+        .then(machines => {
+            selectedNodeIds.forEach(nodeId => {
+                const machine = machines.find(m => m.id == nodeId);
+                if (!machine) {
+                    console.error("Machine not found");
                     return;
                 }
 
-                fetch('api/machine/')
-                    .then(response => response.json())
-                    .then(machines => {
-                        const machine = machines.find(m => m.id == nodeId);
-                        if (!machine) {
-                            console.error("Machine not found");
-                            return;
-                        }
-                        const nodeImage = `/media/${machine.image}`;
-                        const pos_x = 100 + (nodeCount * 50);
-                        const pos_y = 100;
-                        const nodeHtml = `
-                            <div class="node-container">
-                                <div class="node-box">
-                                    <div class="image-preview" style="width: 250px; height: 100px; overflow: hidden;">
-                                        <img src="${nodeImage}" alt="Node Image" style="max-width: 100%; max-height: 100%;" class="border" />
-                                    </div>
-                                </div>
-                                <span style="display: grid; grid-template-columns: repeat(6, 2fr); gap: 15px 10px; position: absolute; left: -93%; top: 50%; transform: translateY(-50%); z-index: 0;">
-                                    ${Array.from({ length: machine.num_inputs }, (_, i) => `<p style="width: 20px; height: 20px; text-align: center; background-color: #1e3a8a; color:#fff; border-radius: 100%; font-size: 7pt; padding: 3px 5px;">${i + 1}</p>`).join('')}
-                                </span>
-                                <div style="margin-right: -13%; margin-top: 13%; display: flex; flex-direction: column; gap: 4px;">
-                                    ${Array.from({ length: machine.num_outputs }, (_, i) => `<div style="width: 20px; height: 20px; text-align: center; color:#fff; border-radius: 100%; font-size: 8.5pt; background-color: #1e3a8a;">${i + 1}</div>`).join('')}
-                                </div>
-                                </div>
-                                <div style="text-align: center; margin-top: 5px;">${machine.machine_name}</div>
-                                `;
+                const nodeImage = `/media/${machine.image}`;
+                const pos_x = 100 + (nodeCount * 50);
+                const pos_y = 100;
+                const nodeHtml = `
+                    <div class="node-container">
+                        <div class="node-box">
+                            <div class="image-preview" style="width: 250px; height: 100px; overflow: hidden;">
+                                <img src="${nodeImage}" alt="Node Image" style="max-width: 100%; max-height: 100%;" class="border" />
+                            </div>
+                        </div>
+                        <span style="display: grid; grid-template-columns: repeat(6, 2fr); gap: 15px 10px; position: absolute; left: -93%; top: 50%; transform: translateY(-50%); z-index: 0;">
+                            ${Array.from({ length: machine.num_inputs }, (_, i) => `<p style="width: 20px; height: 20px; text-align: center; background-color: #1e3a8a; color:#fff; border-radius: 100%; font-size: 7pt; padding: 3px 5px;">${i + 1}</p>`).join('')}
+                        </span>
+                        <style>
+                        .inputs {
+                            display: grid;
+                            grid-template-columns: repeat(6, 2fr); 
+                            gap: 10px;
+                            position: absolute; 
+                            left: -80%; 
+                            top: 50%; 
+                            transform: translateY(-50%);
+                            z-index: 999;
+                        }</style>
+                        <div style="margin-right: -13%; margin-top: 13%; display: flex; flex-direction: column; gap: 4px;">
+                            ${Array.from({ length: machine.num_outputs }, (_, i) => `<div style="width: 20px; height: 20px; text-align: center; color:#fff; border-radius: 100%; font-size: 8.5pt; background-color: #1e3a8a;">${i + 1}</div>`).join('')}
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 5px;">${machine.machine_name}</div>
+                `;
+                try {
+                    editor.addNode(machine.type, machine.num_inputs, machine.num_outputs, pos_x, pos_y, 'image_node', { image: nodeImage }, nodeHtml);
+                    nodeCount++;
+                } catch (error) {
+                    console.error("Error adding node:", error);
+                }
 
-                        try {
-                            editor.addNode(machine.type, machine.num_inputs, machine.num_outputs, pos_x, pos_y, 'image_node', { image: nodeImage }, nodeHtml);
-                            nodeCount++;
-                        } catch (error) {
-                            console.error("Error adding node:", error);
-                        }
-                    });
-            }
+                const optionToRemove = document.querySelector(`#node-select option[value="${nodeId}"]`);
+                if (optionToRemove) {
+                    optionToRemove.remove();
+                }
+            });
+            $('#node-select').val([]).trigger('change');
+        });
+}
+
 
             function saveLayout() {
                 const flowData = editor.export();
@@ -156,9 +182,10 @@
                     Swal.fire('Error', error.message, 'error');
                 });
             }
+
             const addNodeButton = document.getElementById('add-node-button');
             if (addNodeButton) {
-                addNodeButton.addEventListener('click', addNode);
+                addNodeButton.addEventListener('click', addNodes);
             }
 
             const saveLayoutButton = document.getElementById('save-layout-button');

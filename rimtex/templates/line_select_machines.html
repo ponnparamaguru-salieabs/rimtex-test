@@ -1,12 +1,9 @@
 {% extends 'topbar.html' %}
 {% load static %}
-
 {% block head %}
     <title>Select Machines</title>
-    <!-- Include SweetAlert CSS and JS -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -51,17 +48,15 @@
                                             <th class="border-b-2 text-center whitespace-no-wrap">LOADING TIME</th>
                                             <th class="border-b-2 text-center whitespace-no-wrap">UNLOADING TIME</th>
                                             <th class="border-b-2 text-center whitespace-no-wrap">ASSIGNED</th>
-                                            <th class="border-b-2 text-center whitespace-no-wrap">REMOVE</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% for machine in filtered_machines|dictsort:"type" %}
                                             {% if machine.type == machine_type.type %}
-                                            <tr>
+                                            <tr data-machine-id="{{ machine.id }}">
                                                 <td class="border-b w-5">
                                                     <div>
-                                                        <input class="input flex-none border border-gray-500" type="checkbox" name="machine_ids" value="{{ machine.id }}" data-line-id="{{ machine.line_id }}"
-                                                        {% if machine.line_id == line_id %}checked{% endif %}>
+                                                        <input class="input flex-none border border-gray-500" type="checkbox" name="machine_ids" value="{{ machine.id }}" data-line-id="{{ machine.line_id }}">
                                                     </div>
                                                 </td>
                                                 <td class="border-b">
@@ -70,17 +65,12 @@
                                                 <td class="border-b text-center">
                                                     <div class="font-medium whitespace-no-wrap">{{ machine.model }}</div>
                                                 </td>
-                                                <td class="text-center border-b">{{ machine.loading_time }}</td>
-                                                <td class="text-center border-b">{{ machine.unloading_time }}</td>
+                                                <td class="text-center border-b loading-time">{{ machine.loading_time }}</td>
+                                                <td class="text-center border-b unloading-time">{{ machine.unloading_time }}</td>
                                                 <td class="w-40 border-b">
-                                                    <div class="flex items-center sm:justify-center {{ machine.line_id|yesno:'text-green-500,text-red-500' }}">
+                                                    <div class="flex items-center sm:justify-center line-status {{ machine.line_id|yesno:'text-green-500,text-red-500' }}">
                                                         {{ machine.line_id|yesno:"YES,NO" }}
                                                     </div>
-                                                </td>
-                                                <td class="text-center border-b 
-                                                    {% if machine.line_id %}text-red-500 cursor-pointer remove-machine{% else %}text-gray-600 cursor-not-allowed{% endif %}"
-                                                    {% if not machine.line_id %} style="pointer-events: none;" {% endif %}>
-                                                    Remove
                                                 </td>
                                             </tr>
                                             {% endif %}
@@ -92,37 +82,38 @@
                     </div>
                 </div>
                 {% endfor %}
-                <div> 
+                <div class="flex gap-2"> 
                     <a id="setButton" data-toggle="modal" data-target="#header-footer-modal-preview" class="intro-y button inline-block bg-theme-1 text-white mb-4 hidden">Set</a> 
+                    <a id="removeButton" class="intro-y button inline-block bg-theme-6 text-white mb-4 hidden" onclick="removeMachines()">Remove Machines</a>
                 </div>
                 <div class="modal" id="header-footer-modal-preview">
                     <div class="modal__content">
                         <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200">
-                            <h2 class="font-medium text-base mr-auto">Add Silver Loading/Unloading</h2>
+                            <h2 class="font-medium text-base mr-auto">Add Loading/Unloading Details</h2>
                         </div>
                         <div class="p-5 grid grid-cols-12 gap-4 row-gap-3">
                             <div class="col-span-12 sm:col-span-6">
-                                <label for="loading-detail-m">Silver Loading Details (m/Can)</label>
+                                <label for="loading-detail-m">Loading Details (m/Can)</label>
                                 <input type="number" id="loading-detail-m" class="input w-full border mt-2 flex-1" placeholder="Enter loading time">
                             </div>
                             <div class="col-span-12 sm:col-span-6">
-                                <label for="unloading-detail-m">Silver Unloading Details (m/Can)</label>
+                                <label for="unloading-detail-m">Unloading Details (m/Can)</label>
                                 <input type="number" id="unloading-detail-m" class="input w-full border mt-2 flex-1" placeholder="Enter unloading time">
                             </div>
                             <div class="col-span-12 sm:col-span-6">
-                                <label for="loading-detail-kg">Silver Loading in Kg/Can</label>
+                                <label for="loading-detail-kg">Loading in Kg/Can</label>
                                 <input type="number" id="loading-detail-kg" class="input w-full border mt-2 flex-1" placeholder="Enter loading time">
                             </div>
                             <div class="col-span-12 sm:col-span-6">
-                                <label for="unloading-detail-kg">Silver Unloading in Kg/Can</label>
+                                <label for="unloading-detail-kg">Unloading in Kg/Can</label>
                                 <input type="number" id="unloading-detail-kg" class="input w-full border mt-2 flex-1" placeholder="Enter unloading time">
                             </div>
                             <div class="col-span-12 sm:col-span-6">
-                                <label for="loading-time-mins">Silver Loading Time (Mins)</label>
+                                <label for="loading-time-mins">Loading Time (Mins)</label>
                                 <input type="number" id="loading-time-mins" class="input w-full border mt-2 flex-1" placeholder="Enter loading time">
                             </div>
                             <div class="col-span-12 sm:col-span-6">
-                                <label for="unloading-time-mins">Silver Unloading Time (Mins)</label>
+                                <label for="unloading-time-mins">Unloading Time (Mins)</label>
                                 <input type="number" id="unloading-time-mins" class="input w-full border mt-2 flex-1" placeholder="Enter unloading time">
                             </div>
                         </div>
@@ -141,18 +132,33 @@
             </div>
         </div>
     </div>
-
     <script>
-        function goToNextStep(lineId) {
-            window.location.href = `/mill-line-config-line/${lineId}`;
-        }
-        function goToPreviousStep(lineId) {
-            window.location.href = `/mill-line-select-pattern/${lineId}`;
-        }
         let currentStep = 1;
         const totalSteps = {{ machine_types|length }};
         function goToStep(step) {
             if (step < 1 || step > totalSteps) return;
+            const unassignedMachines = Array.from(document.querySelectorAll('input[name="machine_ids"]:checked')).filter(checkbox => {
+                const machineRow = checkbox.closest('tr');
+                return machineRow.querySelector('.line-status').textContent.trim() === 'NO';
+            });
+
+            if (unassignedMachines.length > 0) {
+                swal({
+                    title: "Warning!",
+                    text: "Some selected machines are not assigned to a line. Please assign them before proceeding.",
+                    icon: "warning",
+                    buttons: true,
+                    dangerMode: true,
+                }).then((willProceed) => {
+                    if (willProceed) {
+                        proceedToStep(step);
+                    }
+                });
+                return; 
+            }
+            proceedToStep(step);
+        }
+        function proceedToStep(step) {
             document.querySelectorAll('.step-box').forEach(box => {
                 box.classList.add('hidden');
             });
@@ -172,146 +178,162 @@
         goToStep(currentStep);
 
         function toggleAllCheckboxes(step, isChecked) {
-    const checkboxes = document.querySelectorAll(`.step-box[data-step="${step}"] input[name="machine_ids"]`);
-    checkboxes.forEach(checkbox => {
-        checkbox.checked = isChecked;
-    });
-}
-
-    document.getElementById('submit-time').addEventListener('click', function() {
-        const loadingDetailM = document.getElementById('loading-detail-m').value;
-        const unloadingDetailM = document.getElementById('unloading-detail-m').value;
-        const loadingDetailKg = document.getElementById('loading-detail-kg').value;
-        const unloadingDetailKg = document.getElementById('unloading-detail-kg').value;
-        const loadingTimeMins = document.getElementById('loading-time-mins').value;
-        const unloadingTimeMins = document.getElementById('unloading-time-mins').value;
-
-        const selectedMachines = Array.from(document.querySelectorAll('input[name="machine_ids"]:checked')).map(checkbox => checkbox.value);
-        
-        fetch('{% url "save_loading_unloading_details" %}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}',
-            },
-            body: JSON.stringify({
-                machine_ids: selectedMachines,
-                loading_detail_m: loadingDetailM,
-                unloading_detail_m: unloadingDetailM,
-                loading_detail_kg: loadingDetailKg,
-                unloading_detail_kg: unloadingDetailKg,
-                loading_time_mins: loadingTimeMins,
-                unloading_time_mins: unloadingTimeMins,
-                line_id: {{ line_id }}
-            }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                swal("Success!", "Details added successfully!", "success");
-                document.getElementById('header-footer-modal-preview').style.display = 'none';
-                location.reload();
-            } else {
-                swal("Error!", data.message, "error"); 
-            }
-        })
-        .catch(error => console.error('Error:', error));
-    });
-    </script>
-    <script>
-        function updateSetButtonVisibility() {
-            const anyChecked = Array.from(document.querySelectorAll('input[name="machine_ids"]')).some(checkbox => checkbox.checked);
-            const setButton = document.getElementById('setButton');
-            setButton.classList.toggle('hidden', !anyChecked);
-        }
-        function toggleAllCheckboxes(step, isChecked) {
             const checkboxes = document.querySelectorAll(`.step-box[data-step="${step}"] input[name="machine_ids"]`);
             checkboxes.forEach(checkbox => {
                 checkbox.checked = isChecked;
             });
             updateSetButtonVisibility();
         }
-    
+        function updateSetButtonVisibility() {
+            const anyChecked = Array.from(document.querySelectorAll('input[name="machine_ids"]')).some(checkbox => checkbox.checked);
+            const setButton = document.getElementById('setButton');
+            const removeButton = document.getElementById('removeButton');
+
+            setButton.classList.toggle('hidden', !anyChecked);
+            removeButton.classList.toggle('hidden', !anyChecked || !anyCheckedAssigned());
+        }
+        function anyCheckedAssigned() {
+            return Array.from(document.querySelectorAll('input[name="machine_ids"]:checked')).every(checkbox => {
+                const machineRow = checkbox.closest('tr');
+                return machineRow.querySelector('.line-status').textContent.trim() === 'YES';
+            });
+        }
         document.querySelectorAll('input[name="machine_ids"]').forEach(checkbox => {
             checkbox.addEventListener('change', updateSetButtonVisibility);
         });
-
-        updateSetButtonVisibility();
-    </script>
-    <script>
-        document.querySelectorAll('input[name="machine_ids"]').forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                // No longer handling removal on checkbox change
+        document.getElementById('submit-time').addEventListener('click', function() {
+            const machineIds = [];
+            document.querySelectorAll('input[name="machine_ids"]:checked').forEach(checkbox => {
+                machineIds.push(checkbox.value);
             });
-        });
-        
-        // Add event listeners to the "Remove" cells
-        document.querySelectorAll('.remove-machine').forEach(removeCell => {
-            removeCell.addEventListener('click', function() {
-                const lineId = this.closest('tr').querySelector('input[name="machine_ids"]').getAttribute('data-line-id');
-                const machineId = this.closest('tr').querySelector('input[name="machine_ids"]').value;
-                const machineName = this.closest('tr').querySelector('.font-medium').textContent;
-        
-                // Prepare data for AJAX request
-                const data = {
-                    machine_id: machineId,
-                    line_id: null // Line ID will be set to null for removal
-                };
-        
-                Swal.fire({
-                    title: 'Are you sure?',
-                    text: `Do you want to remove machine ${machineName} from line ID ${lineId}?`,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Yes, remove it!',
-                    cancelButtonText: 'No, keep it'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Perform the AJAX request to update the machine status
-                        updateMachineStatus(data, this.closest('tr').querySelector('input[name="machine_ids"]'));
+            const loadingDetailM = document.getElementById('loading-detail-m').value;
+            const unloadingDetailM = document.getElementById('unloading-detail-m').value;
+            const loadingDetailKg = document.getElementById('loading-detail-kg').value;
+            const unloadingDetailKg = document.getElementById('unloading-detail-kg').value;
+            const loadingTimeMins = document.getElementById('loading-time-mins').value;
+            const unloadingTimeMins = document.getElementById('unloading-time-mins').value;
+            $.ajax({
+                url: '{% url "save_loading_unloading_details" %}',
+                type: 'POST',
+                data: JSON.stringify({
+                    machine_ids: machineIds,
+                    loading_detail_m: loadingDetailM,
+                    unloading_detail_m: unloadingDetailM,
+                    loading_detail_kg: loadingDetailKg,
+                    unloading_detail_kg: unloadingDetailKg,
+                    loading_time_mins: loadingTimeMins,
+                    unloading_time_mins: unloadingTimeMins,
+                    line_id: '{{ line_id }}'
+                }),
+                contentType: 'application/json',
+                success: function(response) {
+                    if (response.success) {
+                        console.log('Success:', response);
+                        updateTableAfterSet(machineIds);
+                        unselectUpdatedMachines(machineIds);
+                        swal("Success!", "Loading and Unloading details updated!", "success");
+                        document.getElementById('loading-detail-m').value = '';
+                        document.getElementById('unloading-detail-m').value = '';
+                        document.getElementById('loading-detail-kg').value = '';
+                        document.getElementById('unloading-detail-kg').value = '';
+                        document.getElementById('loading-time-mins').value = '';
+                        document.getElementById('unloading-time-mins').value = '';
+                        document.querySelector('[data-dismiss="modal"]').click();
+                    } else {
+                        console.log('Error:', response.message);
+                        swal("Error!", response.message || "An error occurred.", "error");
                     }
-                });
+                },
+                error: function() {
+                    swal("Error!", "Something went wrong.", "error");
+                }
             });
         });
-        
-        function updateMachineStatus(data, checkbox) {
-            fetch('{% url "unassign_machine_line" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}',
-                },
-                body: JSON.stringify(data),
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    // Update the checkbox's data-line-id attribute
-                    checkbox.setAttribute('data-line-id', data.line_id || 'None');
-        
-                    // Update availability text
-                    const statusCell = checkbox.closest('tr').querySelector('.flex.items-center');
-                    statusCell.className = 'flex items-center sm:justify-center text-red-500';
-                    statusCell.textContent = 'NO';
-        
-                    Swal.fire(
-                        'Updated!',
-                        `Machine removed from line successfully!`,
-                        'success'
-                    );
+        function updateTableAfterSet(machineIds) {
+            machineIds.forEach(machineId => {
+                const machineRow = document.querySelector(`tr[data-machine-id="${machineId}"]`);
+                if (machineRow) {  
+                    const loadingTimeCell = machineRow.querySelector('.loading-time');
+                    const unloadingTimeCell = machineRow.querySelector('.unloading-time');
+                    const assignedCell = machineRow.querySelector('.line-status');
+                    loadingTimeCell.textContent = document.getElementById('loading-time-mins').value;
+                    unloadingTimeCell.textContent = document.getElementById('unloading-time-mins').value;
+                    assignedCell.textContent = "YES";
+                    assignedCell.classList.remove('text-red-500');
+                    assignedCell.classList.add('text-green-500');
                 } else {
-                    Swal.fire('Error', data.message, 'error');
+                    console.warn(`Machine row with ID ${machineId} not found.`);
                 }
-            })
-            .catch(error => {
-                console.error('Fetch error:', error);
-                Swal.fire('Error', 'There was an issue with the request.', 'error');
             });
         }
-        </script>
+
+        function unselectUpdatedMachines(machineIds) {
+            machineIds.forEach(machineId => {
+                const checkbox = document.querySelector(`input[name="machine_ids"][value="${machineId}"]`);
+                if (checkbox) {
+                    checkbox.checked = false;  
+                }
+            });
+        }
+        function getCsrfToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        }
+        function removeMachines() {
+            const machineIds = [];
+            document.querySelectorAll('input[name="machine_ids"]:checked').forEach(checkbox => {
+                machineIds.push(checkbox.value);
+            });
+            if (machineIds.length === 0) {
+                swal("Error!", "No machines selected for removal.", "error");
+                return;
+            }
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This or These Machines will be unassigned from this line",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, unassign it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '{% url "unassign_machine_line" %}',  
+                        type: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCsrfToken()  
+                        },
+                        data: JSON.stringify({
+                            machine_ids: machineIds
+                        }),
+                        contentType: 'application/json',
+                        success: function(response) {
+                            if (response.success) {
+                                swal("Success!", "Machines unassigned successfully!", "success");
+                                machineIds.forEach(id => {
+                                    const machineRow = document.querySelector(`tr[data-machine-id="${id}"]`);
+                                    const assignedCell = machineRow.querySelector('.line-status');
+                                    const loadingTimeCell = machineRow.querySelector('.loading-time');
+                                    const unloadingTimeCell = machineRow.querySelector('.unloading-time');
+                                    loadingTimeCell.textContent = 'None';
+                                    unloadingTimeCell.textContent = 'None';
+                                    assignedCell.textContent = "NO";
+                                    assignedCell.classList.remove('text-green-500');
+                                    assignedCell.classList.add('text-red-500');
+                                    const checkbox = machineRow.querySelector('input[name="machine_ids"]');
+                                    checkbox.checked = false;
+                                });
+                            } else {
+                                swal("Error!", response.message || "An error occurred.", "error");
+                            }
+                        },
+                        error: function() {
+                            swal("Error!", "Something went wrong.", "error");
+                        }
+                    });
+                }
+            });
+        }
+    </script>
 {% endblock %}

@@ -116,7 +116,7 @@ def process_received_data(data, topic, userdata):
     if request is None:
         logger.warning(f"'request' not found in userdata. Skipping processing for topic {topic}")
         return
-    device_id = data.get('deviceID')
+    device_id = data.get('deviceId')
     can_id = data.get('canID')
     position_id = data.get('positionID')
     can_result = data.get('canResult')

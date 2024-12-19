@@ -52,7 +52,12 @@
 }
 
 .drawflow .connection .main-path {
-  stroke: green;
+  stroke: #00a83b;
+  stroke-width: 3px;
+}
+
+.drawflow .connection .main-path:hover {
+  stroke: #d31b21;
   stroke-width: 5px;
 }
 

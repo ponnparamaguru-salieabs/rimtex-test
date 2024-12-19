@@ -28,7 +28,7 @@
             <div class="tab-content__pane w-full flex justify-center active">
                 <div class="col-right w-full">
                     <div class="flex gap-2">
-                        <select id="node-select" data-hide-search="true" class="w-2/12 select2">
+                        <select id="node-select" multiple data-hide-search="true" class="w-2/12 select2">
                             <!-- Options will be populated dynamically -->
                         </select>
                         <button id="add-node-button" class="button bg-theme-1 text-white">Add Machine</button>
@@ -49,11 +49,9 @@
             const editor = new Drawflow(id);
             editor.reroute = true;
             editor.start();
-
             if (existingLayoutData) {
                 editor.import(existingLayoutData);
             }
-
             editor.on('nodeCreated', function(id) { console.log("Node created " + id); });
             editor.on('nodeRemoved', function(id) { console.log("Node removed " + id); });
             editor.on('nodeSelected', function(id) { console.log("Node selected " + id); });
@@ -61,11 +59,9 @@
             editor.on('connectionRemoved', function(connection) { console.log('Connection removed ' + connection); });
             editor.on('addReroute', function(id) { console.log("Reroute added " + id); });
             editor.on('removeReroute', function(id) { console.log("Reroute removed " + id); });
-
-    
             const select = document.getElementById('node-select');
             if (select) {
-                select.innerHTML = '<option value="">Select a Machine</option>';
+                select.innerHTML = '<option value="">Select Machines</option>';
                 machinesData.forEach(machine => {
                     const option = document.createElement('option');
                     option.value = machine.id;
@@ -73,50 +69,59 @@
                     select.appendChild(option);
                 });
             }
-    
+            $(select).select2({
+                closeOnSelect: false, 
+                placeholder: 'Select Machines',
+            });
+
             function addNode() {
-                const nodeId = document.getElementById('node-select').value;
-                if (!nodeId) {
+                const selectedNodeIds = Array.from(document.getElementById('node-select').selectedOptions)
+                                              .map(option => option.value);
+                if (selectedNodeIds.length === 0) {
                     console.error("No machine selected");
                     return;
                 }
-    
-                const machine = machinesData.find(m => m.id == nodeId);
-                if (!machine) {
-                    console.error("Machine not found");
-                    return;
-                }
-    
-                const nodeImage = `/media/${machine.image}`;
-                const pos_x = 100 + (nodeCount * 50);
-                const pos_y = 100;
-                const nodeHtml = `
-                    <div class="node-container">
-                        <div class="node-box">
-                            <div class="image-preview" style="width: 250px; height: 100px; overflow: hidden;">
-                                <img src="${nodeImage}" alt="Node Image" style="max-width: 100%; max-height: 100%;" />
+                selectedNodeIds.forEach(nodeId => {
+                    const machine = machinesData.find(m => m.id == nodeId);
+                    if (!machine) {
+                        console.error("Machine not found");
+                        return;
+                    }
+                    const nodeImage = `/media/${machine.image}`;
+                    const pos_x = 100 + (nodeCount * 50);
+                    const pos_y = 100;
+                    const nodeHtml = `
+                        <div class="node-container">
+                            <div class="node-box">
+                                <div class="image-preview" style="width: 250px; height: 100px; overflow: hidden;">
+                                    <img src="${nodeImage}" alt="Node Image" style="max-width: 100%; max-height: 100%;" />
+                                </div>
+                            </div>
+                            <span style="display: grid; grid-template-columns: repeat(6, 2fr); gap: 15px 10px; position: absolute; left: -93%; top: 50%; transform: translateY(-50%); z-index: 0;">
+                                ${Array.from({ length: machine.num_inputs }, (_, i) => `<p style="width: 20px; height: 20px; text-align: center; background-color: #1e3a8a; color:#fff; border-radius: 100%; font-size: 7pt; padding: 3px 5px;">${i + 1}</p>`).join('')}
+                            </span>
+                            <div style="margin-right: -13%; margin-top: 13%; display: flex; flex-direction: column; gap: 2px; ">
+                                ${Array.from({ length: machine.num_outputs }, (_, i) => `<div style="width: 20px; height: 20px; text-align: center; color:#fff; border-radius: 100%; font-size: 8.5pt; background-color: #1e3a8a;">${i + 1}</div>`).join('')}
                             </div>
                         </div>
-                        <span style="display: grid; grid-template-columns: repeat(6, 2fr); gap: 15px 10px; position: absolute; left: -93%; top: 50%; transform: translateY(-50%); z-index: 0;">
-                            ${Array.from({ length: machine.num_inputs }, (_, i) => `<p style="width: 20px; height: 20px; text-align: center; background-color: #1e3a8a; color:#fff; border-radius: 100%; font-size: 7pt; padding: 3px 5px;">${i + 1}</p>`).join('')}
-                        </span>
-                        <div style="margin-right: -13%; margin-top: 13%; display: flex; flex-direction: column; gap: 2px; ">
-                            ${Array.from({ length: machine.num_outputs }, (_, i) => `<div style="width: 20px; height: 20px; text-align: center; color:#fff; border-radius: 100%; font-size: 8.5pt; background-color: #1e3a8a;">${i + 1}</div>`).join('')}
-                        </div>
-                    </div>
-                    <div style="text-align: center; margin-top: 5px;">${machine.machine_name}</div>
+                        <div style="text-align: center; margin-top: 5px;">${machine.machine_name}</div>
                     `;
-    
-                try {
-                    editor.addNode(machine.machine_name, machine.num_inputs, machine.num_outputs, pos_x, pos_y, 'image_node', { image: nodeImage }, nodeHtml);
-                    nodeCount++;
-                } catch (error) {
-                    console.error("Error adding node:", error);
-                }
+                    try {
+                        editor.addNode(machine.machine_name, machine.num_inputs, machine.num_outputs, pos_x, pos_y, 'image_node', { image: nodeImage }, nodeHtml);
+                        nodeCount++;
+                    } catch (error) {
+                        console.error("Error adding node:", error);
+                    }
+                });
+                selectedNodeIds.forEach(nodeId => {
+                    const optionToRemove = select.querySelector(`option[value="${nodeId}"]`);
+                    if (optionToRemove) {
+                        optionToRemove.remove();
+                    }
+                });
+                $(select).trigger('change');
             }
-    
             document.getElementById('add-node-button').addEventListener('click', addNode);
-    
             function saveLayout() {
                 const flowData = editor.export();
                 const lineId = '{{ line_id }}';
@@ -148,5 +153,4 @@
             document.getElementById('save-layout-button').addEventListener('click', saveLayout);
         });
     </script>
-    
 {% endblock %}

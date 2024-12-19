@@ -82,7 +82,7 @@
         {% endif %}
         {% if request.user.userprofile.permissions.reports_view or request.user.is_staff %} 
         <li>
-            <a href="{% url 'millReport' %}" class="top-menu {% if active_menu == 'millReport' %}top-menu--active{% endif %}">
+            <a href="{% url 'millReportAgeing' %}" class="top-menu {% if active_menu == 'millReport' %}top-menu--active{% endif %}">
                 <div class="top-menu__icon"> <i data-feather="settings"></i> </div>
                 <div class="top-menu__title "> Report </div>
             </a>

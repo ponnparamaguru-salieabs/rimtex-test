@@ -2,8 +2,20 @@
 {% load static %}
 
 {% block head %}
-    <title>Shift Settings</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.css">
+<title>Non Scan Settings</title>
+    <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/styles/ag-grid.css">
+    <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/styles/ag-theme-alpine.css">
+    <script src="https://unpkg.com/ag-grid-community/dist/ag-grid-community.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/handsontable@14.5/dist/handsontable.full.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@14.5/dist/handsontable.full.min.css" />
+    <script src="https://handsontable.com/docs/scripts/fixer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+         #example {
+            max-width: 900px;
+            width: 100%;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
@@ -25,165 +37,30 @@
                 </div>
             </div>
             <div class="tab-content p-8 mt-2 w-full flex justify-center">
-                <div class="tab-content__pane w-full active" id="shiftSet">
-                    <div class="actions flex justify-end mb-4 gap-4">
-                        <h2 class="text-lg font-medium mr-auto text-theme-6">List of Shifts</h2>
-                        {% if request.user.is_staff or request.user.userprofile.permissions.set_shift_edit %}
-                        <div class="text-center">
-                            <a href="javascript:;" data-toggle="modal" data-target="#addShiftModal" class="button inline-block bg-theme-1 text-white">Add Shift</a>
-                        </div>
-                        <div class="modal" id="addShiftModal">
-                            <div class="modal__content">
-                                <form method="post" id="shiftForm">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="shift_id" id="shift_id">
-                                    <input type="hidden" name="action" id="action" value="add">
-                                    <div class="flex items-center px-5 py-5 sm:py-3 border-b border-gray-200">
-                                        <h2 class="font-medium text-base mr-auto">Add/Edit Shift</h2>
-                                    </div>
-                                    <div class="p-5 grid grid-cols-1 gap-4">
-                                        <div class="col-span-12">
-                                            <label>Shift Number</label>
-                                            <input type="text" name="shift_number" id="shift_number" class="input w-full border mt-2 flex-1" placeholder="Shift Number" required>
-                                        </div>
-                                        <div class="col-span-12">
-                                            <label>Shift Name</label>
-                                            <input type="text" name="shift_name" id="shift_name" class="input w-full border mt-2 flex-1" placeholder="Shift Name" required>
-                                        </div>
-                                        <div class="col-span-12">
-                                            <label>From</label>
-                                            <input type="time" name="start_time" id="start_time" class="input border w-full" required>
-                                        </div>
-                                        <div class="col-span-12">
-                                            <label>To</label>
-                                            <input type="time" name="end_time" id="end_time" class="input border w-full" required>
-                                        </div>
-                                    </div>
-                                    <div class="px-5 py-3 text-right border-t border-gray-200">
-                                        <button type="button" class="button w-20 border text-gray-700 mr-1" data-dismiss="modal">Cancel</button>
-                                        <button type="submit" class="button w-20 bg-theme-1 text-white">Save</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>             
-                        {% endif %}           
-                    </div>
-                    <div class="intro-y datatable-wrapper box p-5">
-                        <table class="table table-report table-report--bordered display datatable w-full">
-                            <thead>
-                                <tr>
-                                    <th class="border-b-2 whitespace-no-wrap">SI NO</th>
-                                    <th class="border-b-2 text-center whitespace-no-wrap">SHIFT NUMBER</th>
-                                    <th class="border-b-2 text-center whitespace-no-wrap">SHIFT NAME</th>
-                                    <th class="border-b-2 text-center whitespace-no-wrap">SHIFT START TIME</th>
-                                    <th class="border-b-2 text-center whitespace-no-wrap">SHIFT END TIME</th>
-                                    {% if request.user.is_staff or request.user.userprofile.permissions.set_shift_edit %}
-                                    <th class="border-b-2 text-center whitespace-no-wrap">ACTION</th>
-                                    {% endif %}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for shift in shifts %}
-                                <tr>
-                                    <td class="border-b">{{ forloop.counter }}</td>
-                                    <td class="border-b text-center">{{ shift.shift_number }}</td>
-                                    <td class="border-b text-center">{{ shift.shift_name }}</td>
-                                    <td class="border-b text-center">{{ shift.start_time|time:"h:i A" }}</td>
-                                    <td class="border-b text-center">{{ shift.end_time|time:"h:i A" }}</td>
-                                    {% if request.user.is_staff or request.user.userprofile.permissions.set_shift_edit %}
-                                    <td class="border-b w-5">
-                                        <div class="flex sm:justify-center items-center">
-                                            <a class="flex items-center mr-3" href="javascript:;" onclick="openEditShiftModal({{ shift.id }})">
-                                                <i data-feather="check-square" class="w-4 h-4 mr-1"></i> Edit 
-                                            </a>
-                                            <button type="button" class="flex items-center text-theme-6" onclick="confirmDelete({{ shift.id }})"> 
-                                                <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete 
-                                            </button>
-                                        </div>
-                                    </td>
-                                    {% endif %}
-                                </tr>
-                                {% endfor %}
-                            </tbody>                            
-                        </table>
-                    </div>
+                <div class="tab-content__pane w-full flex justify-center active" id="shiftSet">
+                    <div id="example"></div>
                 </div>
             </div>
         </div>
-    </div>  
-
+    </div>
     <script>
-        const shiftsData = {{ shifts_data|safe }};
-
-        function openEditShiftModal(shiftId) {
-            const shift = shiftsData.find(s => s.pk === shiftId);  
-            if (shift) {
-                const shiftFields = shift.fields;  
-
-                document.getElementById('shift_id').value = shift.pk;
-                document.getElementById('shift_number').value = shiftFields.shift_number;
-                document.getElementById('shift_name').value = shiftFields.shift_name;
-                document.getElementById('start_time').value = shiftFields.start_time; 
-                document.getElementById('end_time').value = shiftFields.end_time; 
-                document.getElementById('action').value = 'edit';
-                $('#addShiftModal').modal('show');
-            }
-        }
-
-        document.getElementById('shiftForm').addEventListener('submit', function(event) {
-            const startTime = document.getElementById('start_time').value;
-            const endTime = document.getElementById('end_time').value;
-
-            if (startTime >= endTime) {
-                event.preventDefault();
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'End time must be after start time.',
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
-            }
+        const container = document.querySelector('#example');
+    
+        const hot = new Handsontable(container, {
+            data: [
+                ['Morning', 8, 11],
+                ['Afternoon', 20, 11 ],
+                ['Evening', 30, 15],
+                ['Night', 30, 15],
+            ],
+            colHeaders: ['Shifts', 'The mill Shift Starting Time', 'The mill Shift Ending Time'],
+            rowHeaders: true,
+            rowHeights: 30,
+            height: '320px',
+            width: '100%',
+            manualColumnResize: true,
+            licenseKey: 'non-commercial-and-evaluation',
         });
-
-        function confirmDelete(shiftId) {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "You won't be able to revert this!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete it!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const form = document.createElement('form');
-                    form.method = 'post';
-                    form.action = '{% url "millShift" %}';  
-
-                    const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
-                    const inputToken = document.createElement('input');
-                    inputToken.type = 'hidden';
-                    inputToken.name = 'csrfmiddlewaretoken';
-                    inputToken.value = csrfToken;
-
-                    const inputShiftId = document.createElement('input');
-                    inputShiftId.type = 'hidden';
-                    inputShiftId.name = 'shift_id';
-                    inputShiftId.value = shiftId;
-
-                    const inputAction = document.createElement('input');
-                    inputAction.type = 'hidden';
-                    inputAction.name = 'action';
-                    inputAction.value = 'delete';
-
-                    form.appendChild(inputToken);
-                    form.appendChild(inputShiftId);
-                    form.appendChild(inputAction);
-                    
-                    document.body.appendChild(form);
-                    form.submit();
-                }
-            });
-        }
-    </script>
+    </script>    
 {% endblock %}
+

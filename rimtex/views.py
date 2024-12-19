@@ -687,7 +687,7 @@ def dashboard(request):
         machine_time_display[machine] = f"{hours}h {minutes}m"
     machine_time_display_json = json.dumps(machine_time_display)
     machine_stoppage_duration_json = json.dumps(machine_stoppage_duration)
-    print(machine_stoppage_duration_json)
+    # print(machine_stoppage_duration_json)
     return render(request, 'dashboard.html', {
         'breadcrumb': [
             {'name': 'Home', 'url': ''},
@@ -940,18 +940,15 @@ def millShift(request):
                 print(f"Error deleting shift: {e}")
             return redirect('millShift')
 
-        shift_number = request.POST.get('shift_number')
         shift_name = request.POST.get('shift_name')
         start_time = request.POST.get('start_time')
         end_time = request.POST.get('end_time')
 
-        today = timezone.now().date()
-
         def parse_time(time_str):
             try:
-                return timezone.datetime.combine(today, timezone.datetime.strptime(time_str, '%H:%M:%S').time())
+                return timezone.datetime.strptime(time_str, '%H:%M:%S').time()
             except ValueError:
-                return timezone.datetime.combine(today, timezone.datetime.strptime(time_str, '%H:%M').time())
+                return timezone.datetime.strptime(time_str, '%H:%M').time()
 
         try:
             start_datetime = parse_time(start_time)
@@ -973,14 +970,12 @@ def millShift(request):
         if action == 'add': 
             MillShift.objects.create(
                 mill=mill,
-                shift_number=shift_number,
                 shift_name=shift_name,
                 start_time=start_datetime,
                 end_time=end_datetime
             )
         elif action == 'edit' and shift_id: 
             shift = get_object_or_404(MillShift, id=shift_id)
-            shift.shift_number = shift_number
             shift.shift_name = shift_name
             shift.start_time = start_datetime
             shift.end_time = end_datetime
@@ -1209,27 +1204,26 @@ def save_loading_unloading_details(request):
 def unassign_machine_line(request):
     if request.method == 'POST':
         data = json.loads(request.body)
-        machine_id = data.get('machine_id')
-
+        machine_ids = data.get('machine_ids')
+        if not machine_ids:
+            return JsonResponse({'success': False, 'message': 'No machine IDs provided.'})
         try:
-            machine = MillMachine.objects.get(id=machine_id)
-            machine.line = None 
-            machine.is_assigned = False
-            machine.loading_details_m = None
-            machine.unloading_details_m = None
-            machine.loading_details_kg = None
-            machine.unloading_details_kg = None
-            machine.loading_time = None
-            machine.unloading_time = None
-            machine.save()
-
-            return JsonResponse({'success': True, 'message': 'Line ID unassigned successfully!'})
-        
-        except MillMachine.DoesNotExist:
-            return JsonResponse({'success': False, 'message': 'Machine not found.'})
+            machines = MillMachine.objects.filter(id__in=machine_ids)
+            if not machines:
+                return JsonResponse({'success': False, 'message': 'No machines found with the provided IDs.'})
+            machines.update(
+                line=None,
+                is_assigned=False,
+                loading_details_m=None,
+                unloading_details_m=None,
+                loading_details_kg=None,
+                unloading_details_kg=None,
+                loading_time=None,
+                unloading_time=None
+            )
+            return JsonResponse({'success': True, 'message': 'Machines unassigned successfully!'})
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)})
-    
     return JsonResponse({'success': False, 'message': 'Invalid request method.'})
 
 @login_required
@@ -1428,28 +1422,13 @@ def format_layout_data(layout_data):
                     formatted_connections.append(formatted_connection)
 
         if 'inputs' in node and node['inputs']:
-            device_id = f"PI{machine_prefix}{node_number}"  # Add prefix P to device IDs
+            device_id = f"PI{machine_prefix}{node_number}" 
             device_ids.append(device_id)
         if 'outputs' in node and node['outputs']:
-            device_id = f"PO{machine_prefix}{node_number}"  # Add prefix P to device IDs
+            device_id = f"PO{machine_prefix}{node_number}"  
             device_ids.append(device_id)
 
     return formatted_connections, device_ids
-
-@login_required
-@role_required(['Admin', 'Maintenance', 'Supervisor'])
-@permission_required(['reports_view'])
-def millReport(request):
-    user_profile = UserProfile.objects.get(user=request.user)
-    mill = user_profile.mill
-    return render(request, 'mill_report.html', {
-        'breadcrumb': [
-            {'name': 'Home', 'url': ''},
-            {'name': 'Mill Report', 'url': ''},
-        ],
-        'active_menu': 'millReport',
-        'mill': mill
-    })
 
 @login_required
 @role_required(['Admin', 'Maintenance', 'Supervisor'])
@@ -1613,6 +1592,62 @@ def lineAdd(request):
         ],
         'active_menu': 'millLine'
     })
+
+@login_required
+@role_required(['Admin', 'Maintenance', 'Supervisor'])
+@permission_required(['reports_view'])
+def millReportAgeing(request):
+    user_profile = UserProfile.objects.get(user=request.user)
+    mill = user_profile.mill
+    mill_id = mill.id
+    millImg = MillInfo.objects.filter(mill_id=mill_id).first()
+    selected_line_id = request.GET.get('line_id')
+    lines = MillLine.objects.filter(mill=mill)
+    if selected_line_id:
+        selected_line = MillLine.objects.get(id=selected_line_id)
+        ageing = MachineConnectionLog.objects.filter(mill_id=mill_id, line_id=selected_line_id, input_machine=None)
+    else:
+        selected_line = None
+        ageing = MachineConnectionLog.objects.filter(mill_id=mill_id, input_machine=None)
+    current_time = timezone.now()
+    for data in ageing:
+        time_difference = current_time - data.output_time
+        ageing_hrs = time_difference.total_seconds() / 3600
+        data.ageing_hrs = round(ageing_hrs)
+    return render(request, 'mill_report_ageing.html', {
+        'breadcrumb': [
+            {'name': 'Home', 'url': ''},
+            {'name': 'Mill Report', 'url': ''},
+        ],
+        'active_menu': 'millReport',
+        'mill': mill,
+        'millImg': millImg,
+        'lines': lines,  
+        'selected_line': selected_line,  
+        'ageing': ageing,  
+        'current_time': current_time,  
+    })
+
+@login_required
+@role_required(['Admin', 'Maintenance', 'Supervisor'])
+@permission_required(['reports_view'])
+def millReportMachineStop(request):
+    user_profile = UserProfile.objects.get(user=request.user)
+    mill = user_profile.mill
+    mill_id = mill.id
+    millImg = MillInfo.objects.filter(mill_id=mill_id).first()
+    stoppage = MachineConnectionLog.objects.filter(mill_id=mill_id, input_machine=None)
+    return render(request, 'mill_report_machinestop.html', {
+        'breadcrumb': [
+            {'name': 'Home', 'url': ''},
+            {'name': 'Mill Report', 'url': ''},
+        ],
+        'active_menu': 'millReport',
+        'mill': mill,
+        'millImg': millImg,
+        'stoppage':stoppage
+    })
+
 
 def base(request):
     user_profile = UserProfile.objects.get(user=request.user)

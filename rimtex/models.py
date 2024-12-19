@@ -134,13 +134,12 @@ class MillInfo(models.Model):
 
 class MillShift(models.Model):
     mill = models.ForeignKey(Mill, on_delete=models.CASCADE)
-    shift_number = models.CharField(max_length=10)
     shift_name = models.CharField(max_length=100)
     start_time = models.TimeField()
     end_time = models.TimeField()
 
     def __str__(self):
-        return f"{self.shift_name} ({self.shift_number})"
+        return f"{self.shift_name}"
 
 class MillLayout(models.Model):
     mill = models.ForeignKey(Mill, on_delete=models.CASCADE)
